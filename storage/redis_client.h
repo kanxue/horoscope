@@ -23,39 +23,48 @@ class RedisClient {
 public:
     RedisClient();
 
-    explicit RedisClient(const std::string& ip,
-                uint16_t port = 6379,
-                int32_t db_index = 0);
+    explicit RedisClient(
+        const std::string& ip,
+        uint16_t port = 6379,
+        int32_t db_index = 0);
 
     virtual ~RedisClient();
 
 public:
-    int Connect(const std::string& ip,
-                uint16_t port = 6379,
-                int32_t db_index = 0);
+    int Connect(
+        const std::string& ip,
+        uint16_t port = 6379,
+        int32_t db_index = 0);
 
-    int Set(const std::string& key,
-            const std::string& value);
+    int Set(
+        const std::string& key,
+        const std::string& value);
 
-    int Set(const std::string& key,
-            const std::string& new_value,
-            std::string* old_value);
+    int Set(
+        const std::string& key,
+        const std::string& new_value,
+        std::string* old_value);
 
-    int Get(const std::string& key,
-            std::string* value);
+    int Get(
+        const std::string& key,
+        std::string* value);
 
-    int IsExist(const std::string& key, bool* is_exist);
+    int IsExist(
+        const std::string& key,
+        bool* is_exist);
 
     int Delete(const std::string& key);
 
-    int Append(const std::string& key,
-               const std::string& value,
-               size_t* new_length = NULL);
+    int Append(
+        const std::string& key,
+        const std::string& value,
+        size_t* new_length = NULL);
 
-    int Substr(const std::string& key,
-               int begin,
-               int end,
-               std::string* value);
+    int Substr(
+        const std::string& key,
+        int begin,
+        int end,
+        std::string* value);
 
 private:
     scoped_ptr<redis::client> m_redis_client;

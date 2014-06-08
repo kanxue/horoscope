@@ -5,9 +5,10 @@
 RedisClient::RedisClient()
 {}
 
-RedisClient::RedisClient(const std::string& ip,
-                         uint16_t port,
-                         int32_t db_index)
+RedisClient::RedisClient(
+    const std::string& ip,
+    uint16_t port,
+    int32_t db_index)
 {
     Connect(ip, port, db_index);
 }
@@ -69,9 +70,10 @@ RedisClient::~RedisClient()
         ret = kRedisOtherError;                                     \
     }
 
-int RedisClient::Connect(const std::string& ip,
-                         uint16_t port,
-                         int32_t db_index)
+int RedisClient::Connect(
+    const std::string& ip,
+    uint16_t port,
+    int32_t db_index)
 {
     int ret = kRedisSuccess;
 
@@ -84,8 +86,9 @@ int RedisClient::Connect(const std::string& ip,
     return ret;
 }
 
-int RedisClient::Set(const std::string& key,
-                     const std::string& value)
+int RedisClient::Set(
+    const std::string& key,
+    const std::string& value)
 {
     int ret = kRedisSuccess;
 
@@ -96,16 +99,18 @@ int RedisClient::Set(const std::string& key,
     return ret;
 }
 
-int RedisClient::Set(const std::string& key,
-                     const std::string& new_value,
-                     std::string* old_value)
+int RedisClient::Set(
+    const std::string& key,
+    const std::string& new_value,
+    std::string* old_value)
 {
     // TODO
     return 0;
 }
 
-int RedisClient::Get(const std::string& key,
-                     std::string* value)
+int RedisClient::Get(
+    const std::string& key,
+    std::string* value)
 {
     int ret = kRedisSuccess;
 
@@ -116,8 +121,9 @@ int RedisClient::Get(const std::string& key,
     return ret;
 }
 
-int RedisClient::IsExist(const std::string& key,
-                         bool* is_exist)
+int RedisClient::IsExist(
+    const std::string& key,
+    bool* is_exist)
 {
     int ret = kRedisSuccess;
     try {
@@ -139,9 +145,10 @@ int RedisClient::Delete(const std::string& key)
     return ret;
 }
 
-int RedisClient::Append(const std::string& key,
-                        const std::string& value,
-                        size_t* new_length)
+int RedisClient::Append(
+    const std::string& key,
+    const std::string& value,
+    size_t* new_length)
 {
     int ret = kRedisSuccess;
 
@@ -153,10 +160,11 @@ int RedisClient::Append(const std::string& key,
     return ret;
 }
 
-int RedisClient::Substr(const std::string& key,
-                        int begin,
-                        int end,
-                        std::string* value)
+int RedisClient::Substr(
+    const std::string& key,
+    int begin,
+    int end,
+    std::string* value)
 {
     int ret = kRedisSuccess;
 

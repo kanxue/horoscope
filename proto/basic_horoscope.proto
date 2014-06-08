@@ -1,0 +1,16 @@
+package horoscope;
+
+message HoroscopeItem {
+    optional uint32 id = 1;
+    optional string name = 2;
+    optional string begin = 3;
+    optional string end = 4;
+    optional string img_url = 5;
+}
+
+message HoroscopeItemList {
+    optional uint32 style_id = 1;
+
+    repeated HoroscopeItem item_list = 2;
+}
+
