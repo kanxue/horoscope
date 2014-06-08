@@ -1,0 +1,3 @@
+// common enum define here.
+
+
