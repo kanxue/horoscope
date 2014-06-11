@@ -14,3 +14,18 @@ message HoroscopeItemList {
     repeated HoroscopeItem item_list = 2;
 }
 
+
+message HoroscopeMatchingRequest {
+	required uint32 sex_flag = 1;
+	required uint32 src_horoscope = 2;
+	required uint32 dest_horoscope = 3;
+}
+
+message HoroscopeMatchingResponse {
+	optional uint32 friendship = 1;
+	optional uint32 love = 2;
+	optional uint32 marrage = 3;
+	optional uint32 family = 4;
+	optional string description = 5;
+}
+
