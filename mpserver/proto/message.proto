@@ -1,0 +1,64 @@
+package mpserver;
+
+message TextMessage {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Content = 5;
+    optional fixed64 MsgId = 6;
+}
+
+message ImageMessage {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string PicUrl = 5;
+    optional string MediaId = 6;
+    optional fixed64 MsgId = 7;
+}
+
+message VoiceMessage {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string MediaId = 5;
+    optional string Format = 6;
+    optional fixed64 MsgId = 7;
+}
+
+message VideoMessage {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string MediaId = 5;
+    optional string ThumbMediaId = 6;
+    optional fixed64 MsgId = 7;
+}
+
+message LocationMessage {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional double Location_X = 5;
+    optional double Location_Y = 6;
+    optional uint32 Scale = 7;
+    optional string Label = 8;
+    optional fixed64 MsgId = 9;
+}
+
+message LinkMessage {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Title = 5;
+    optional string Description = 6;
+    optional string Url = 7;
+    optional fixed64 MsgId = 8;
+}
+

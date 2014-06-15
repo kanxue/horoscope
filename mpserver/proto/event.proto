@@ -1,0 +1,40 @@
+package mpserver;
+
+message SubscribeEvent {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Event = 5;
+}
+
+message ScanEvent {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Event = 5;
+    optional string EventKey = 6;
+    optional string Ticket = 7;
+}
+
+message LocationEvent {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Event = 5;
+    optional double Latitude = 6;
+    optional double Longitude = 7;
+    optional double Precision = 8;
+}
+
+message ClickEvent {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Event = 5;
+    optional string EventKey = 6;
+}
+
