@@ -1,0 +1,7 @@
+--log_dir=/home/public/log
+--v=4
+--server_ip=127.0.0.1
+--server_port=12345
+--threads_num=10
+--verify_token=NVWUDIAN_verify_token
+
