@@ -1,0 +1,12 @@
+message TestA {
+    optional string a_1 = 1;
+    optional bool a_2 = 2;
+    optional int32 a_3 = 3;
+}
+
+message TestB {
+    optional string b_1 = 1;
+    optional TestA b_2 = 2;
+    repeated TestA b_3 = 3;
+}
+

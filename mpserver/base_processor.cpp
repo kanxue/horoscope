@@ -4,25 +4,26 @@
 #include "common/web/url.h"
 #include "thirdparty/glog/logging.h"
 
+#include "horoscope/mpserver/text_message_processor.h"
 #include "horoscope/mpserver/verify_token_processor.h"
 
 BaseProcessor* GenerateProcessor(
     const std::string& uri,
+    const std::map<std::string, std::string>& querys,
     const std::string& input,
     std::string* output)
 {
-    web::url::Url url_obj(uri.c_str(), uri.size());
-    std::map<std::string, std::string> querys;
-    url_obj.GetQuerys(querys);
+    std::map<std::string, std::string>::const_iterator it
+        = querys.find("echostr");
+    if (it != querys.end()) {
+        VerifyTokenProcessor* real_processor = new VerifyTokenProcessor(uri, input, output);
+        real_processor->SetEchoStr(it->second);
 
-    if ((querys.find("signature") != querys.end())
-        && (querys.find("timestamp") != querys.end())
-        && (querys.find("nonce") != querys.end())
-        && (querys.find("echostr") != querys.end())) {
-        VerifyTokenProcessor* real_processor = new VerifyTokenProcessor(
-            uri, input, output);
-        real_processor->SetQuerys(querys);
+        return reinterpret_cast<BaseProcessor*>(real_processor);
+    }
 
+    if (input.find("<MsgType><![CDATA[text]]></MsgType>") != std::string::npos) {
+        TextMessageProcessor* real_processor = new TextMessageProcessor(uri, input, output);
         return reinterpret_cast<BaseProcessor*>(real_processor);
     }
 

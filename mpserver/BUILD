@@ -4,13 +4,18 @@ cc_library(
         'base_handler.cpp',
         'base_processor.cpp',
         'mp_handler.cpp',
-        'verify_token_processor.cpp',
+        'text_message_processor.cpp',
     ],
     deps = [
         '//common/net/http:http',
         '//common/web:web',
         '//thirdparty/gflags:gflags',
-        '//thirdparty/glog:glog'
+        '//thirdparty/glog:glog',
+
+        '//horoscope/mpserver/proto:event_proto',
+        '//horoscope/mpserver/proto:message_proto',
+        '//horoscope/mpserver/proto:pb_to_xml',
+        '//horoscope/mpserver/proto:xml_to_pb',
     ]
 )
 

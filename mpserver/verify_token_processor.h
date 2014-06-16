@@ -1,7 +1,6 @@
 #ifndef MPSERVER_VERIFY_TOKEN_PROCESSOR_H_
 #define MPSERVER_VERIFY_TOKEN_PROCESSOR_H_
 
-#include <map>
 #include <string>
 #include "horoscope/mpserver/base_processor.h"
 
@@ -17,12 +16,16 @@ public:
     virtual ~VerifyTokenProcessor() {}
 
 public:
-    void SetQuerys(const std::map<std::string, std::string>& querys);
+    void SetEchoStr(const std::string& echostr) {
+        m_echostr = echostr;
+    }
 
-    virtual void Run();
+    virtual void Run() {
+        m_output->assign(m_echostr);
+    }
 
 private:
-    std::map<std::string, std::string> m_querys;
+    std::string m_echostr;
 }; // class VerifyTokenProcessor
 
 #endif // MPSERVER_VERIFY_TOKEN_PROCESSOR_H_

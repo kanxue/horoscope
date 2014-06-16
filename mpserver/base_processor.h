@@ -29,6 +29,7 @@ protected:
 // Factory function.
 BaseProcessor* GenerateProcessor(
     const std::string& uri,
+    const std::map<std::string, std::string>& querys,
     const std::string& input,
     std::string* output);
 

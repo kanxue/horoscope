@@ -3,6 +3,7 @@
 #include "common/base/string/algorithm.h"
 #include "common/base/string/string_number.h"
 #include "common/net/http/http_server.h"
+
 #include "thirdparty/glog/logging.h"
 
 BaseHandler::BaseHandler(
@@ -26,6 +27,8 @@ void BaseHandler::Handler(
     HttpResponse* response,
     Closure<void>* done)
 {
+    int64_t start = GetTimeStampInUs();
+
     LOG(INFO)
         << "request " << (void*)request
         << " response " << (void*)response
@@ -46,9 +49,13 @@ void BaseHandler::Handler(
 
     ReplaceAll(&input, "\n", "");
     ReplaceAll(&output, "\n", "");
+
+    int64_t end = GetTimeStampInUs();
+
     LOG(INFO)
         << "uri [" << uri
         << "] input [" << input
-        << "] output [" << output << "]";
+        << "] output [" << output
+        << "] cost " << (end - start) << " us";
 }
 
