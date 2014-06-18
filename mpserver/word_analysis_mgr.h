@@ -22,7 +22,7 @@ public:
 	static void printInfo();
 	
 private:
-    static bool is4DigitData(
+    static bool is4DigitDate(
 		const std::string& input);
 
 };

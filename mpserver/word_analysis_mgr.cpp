@@ -10,14 +10,14 @@ void wordAnalysisMgr::testFunc()
     int i = 1;
 }
 
-bool wordAnalysisMgr::is4DigitData(
+bool wordAnalysisMgr::is4DigitDate(
 		const std::string& input)
 {
 	if(input.size() != 4)
 		return false;
 
 	for(int i = 0; i < input.size(); i++)
-		if(input[i] < '0' || input[i] > 9)
+		if(input[i] < '0' || input[i] > '9')
 			return false;
 
 	return true;
@@ -26,7 +26,7 @@ bool wordAnalysisMgr::is4DigitData(
 enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 	const std::string& input)
 {
-	if(wordAnalysisMgr::is4DigitData(input))
+	if(wordAnalysisMgr::is4DigitDate(input))
 	{
 		//双鱼
 		if((input >= "0219" && input <= "0229") || 
