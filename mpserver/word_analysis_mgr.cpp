@@ -1,4 +1,5 @@
 #include <string>
+#include <regex>
 #include "word_analysis_mgr.h"
 
 wordAnalysisMgr::wordAnalysisMgr()
@@ -7,23 +8,31 @@ wordAnalysisMgr::wordAnalysisMgr()
 
 
 
-bool wordAnalysisMgr::is4DigitDate(
-		const std::string& input)
+bool wordAnalysisMgr::has4DigitDate(
+		const std::string& input,
+        std::string& result)
 {
-	if(input.size() != 4)
-		return false;
-
-	for(int i = 0; i < input.size(); i++)
-		if(input[i] < '0' || input[i] > '9')
-			return false;
-
-	return true;
+    std::smatch match;
+    
+    std::regex_constants::syntax_option_type fl = std::regex_constants::syntax_option_type::icase;
+    // 编译一个正则表达式语句
+    std::regex regExpress("(\\d{4})", fl);
+    
+    
+    if(regex_search(input, match, regExpress))
+    {
+        result = input.substr(match.position(0), match.length(0));
+        return true;
+    }
+    return false;
+    
 }
 
 enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
-	const std::string& input)
+	const std::string& origin)
 {
-	if(wordAnalysisMgr::is4DigitDate(input))
+    std::string input;
+	if(wordAnalysisMgr::has4DigitDate(origin, input))
 	{
 		//双鱼
 		if((input >= "0219" && input <= "0229") || 
@@ -87,6 +96,7 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 	}
 	else
 	{
+        input = origin;
 		if(input.find("双鱼") != std::string::npos)
 			return Pisces;
 
@@ -128,9 +138,34 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 			return Aries;
         
 	}
-    return known;
+    return UnknownHoroscope;
 
 }
+
+enHoroscopeDate wordAnalysisMgr::GetHorosopeData(
+    const std::string& input)
+{
+    if(input.find("今天") != std::string::npos ||
+       input.find("今日") != std::string::npos)
+        return Today;
+    
+    if(input.find("明天") != std::string::npos ||
+       input.find("明日") != std::string::npos)
+        return Tomorrow;
+    
+    if(input.find("本周") != std::string::npos)
+        return ThisWeek;
+    
+    if(input.find("本月") != std::string::npos)
+        return ThisMonth;
+
+    if(input.find("今年") != std::string::npos)
+        return ThisYear;
+
+    return UnknownDate;
+}
+
+
 
 
 std::string wordAnalysisMgr::GetHoroscopeName(
@@ -180,6 +215,30 @@ std::string wordAnalysisMgr::GetHoroscopeName(
 
 }
 
+
+std::string wordAnalysisMgr::GetHoroscopeDate(
+        const enHoroscopeDate& date)
+{
+    switch (date) {
+        case Today:
+            return "今日";
+            
+        case Tomorrow:
+            return "明日";
+            
+        case ThisWeek:
+            return "本周";
+        
+        case ThisMonth:
+            return "本月";
+            
+        case ThisYear:
+            return "今年";
+            
+        default:
+            return "未来";
+    }
+}
 
 
 

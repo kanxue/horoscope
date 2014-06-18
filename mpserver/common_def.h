@@ -12,6 +12,16 @@ enum enHoroscopeType
 	Scorpio	 = 10,		//天蝎座
 	Sagittarius = 11, 	//射手座
 	Capricorn = 12,		//摩羯座
-    known     = 13,     //出错
+    UnknownHoroscope = 13,     //出错
+};
+
+enum enHoroscopeDate
+{
+    Today       = 1,
+    Tomorrow    = 2,
+    ThisWeek    = 3,
+    ThisMonth   = 4,
+    ThisYear    = 5,
+    UnknownDate = 6,
 };
 
