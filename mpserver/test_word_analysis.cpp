@@ -1,20 +1,19 @@
-#include "word_analysis_mgr.h"
-
 #include <iostream>
 #include <string>
 
+#include "word_analysis_mgr.h"
+
 using namespace std;
 
-int main(int argc, char const *argv[])
+int main()
 {
 	while(1)
 	{
 		string input;
 		cin>>input;
-		word_analysis_mgr::printInfo();
-		//enHoroscopeType type1 = word_analysis_mgr::GetHoroscopeType(input);
-		//string showName = word_analysis_mgr::GetHoroscopeName(type1);
-		//cout<<"This is "<<showName<<endl;
+		enHoroscopeType type1 = wordAnalysisMgr::GetHoroscopeType(input);
+		string showName = wordAnalysisMgr::GetHoroscopeName(type1);
+		cout<<"This is "<<showName<<endl;
 	}
 	return 0;
 }

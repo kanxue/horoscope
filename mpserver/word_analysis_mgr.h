@@ -4,13 +4,15 @@
 
 #include "common_def.h"
 
-class word_analysis_mgr
-{
-public:
-	/* data */
-	static bool is4DigitData(
-		const std::string& input);
 
+class wordAnalysisMgr{
+public:
+    wordAnalysisMgr();
+    
+    void testFunc();
+    
+	/* data */
+	
 	static enHoroscopeType GetHoroscopeType(
 		const std::string& input);
 	
@@ -18,5 +20,9 @@ public:
 		const enHoroscopeType& type);
 
 	static void printInfo();
+	
+private:
+    static bool is4DigitData(
+		const std::string& input);
 
 };
