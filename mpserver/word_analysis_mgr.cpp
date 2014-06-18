@@ -5,10 +5,7 @@ wordAnalysisMgr::wordAnalysisMgr()
 {
 }
 
-void wordAnalysisMgr::testFunc()
-{
-    int i = 1;
-}
+
 
 bool wordAnalysisMgr::is4DigitDate(
 		const std::string& input)
@@ -129,7 +126,9 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 
 		if(input.find("白羊") != std::string::npos)
 			return Aries;
+        
 	}
+    return known;
 
 }
 
@@ -175,14 +174,11 @@ std::string wordAnalysisMgr::GetHoroscopeName(
 		case Aries:
 			return "白羊座";
 
+        default:
+            return "error";
 	}
 
 }
-
-void wordAnalysisMgr::printInfo()
-	{
-		int i = 0;
-	}
 
 
 
