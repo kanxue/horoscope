@@ -7,10 +7,26 @@ wordAnalysisMgr::wordAnalysisMgr()
 }
 
 
+bool wordAnalysisMgr::getMonthDay(const std::string& input, std::string& month, std::string& day)
+{
+    std::string digitDate;
+    
+    if(wordAnalysisMgr::containsSeperateMonthDay(input, month, day))
+    {
+        return true;
+    }
+    if(wordAnalysisMgr::contains4DigitMonthDay(input, month, day))
+    {
+        return true;
+    }
+    return false;
+}
 
-bool wordAnalysisMgr::has4DigitDate(
+
+bool wordAnalysisMgr::contains4DigitMonthDay(
 		const std::string& input,
-        std::string& result)
+        std::string& month,
+        std::string& day)
 {
     std::smatch match;
     
@@ -21,83 +37,188 @@ bool wordAnalysisMgr::has4DigitDate(
     
     if(regex_search(input, match, regExpress))
     {
-        result = input.substr(match.position(0), match.length(0));
+        std::string result = input.substr(match.position(0), match.length(0));
+        month = result.substr(0, 2);
+        day = result.substr(2);
         return true;
     }
     return false;
     
 }
 
-enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
-	const std::string& origin)
+
+bool wordAnalysisMgr::containsSeperateMonthDay(
+                                     const std::string& input,
+                                     std::string& month,
+                                     std::string& day)
 {
-    std::string input;
-	if(wordAnalysisMgr::has4DigitDate(origin, input))
+    std::smatch match;
+    std::regex_constants::syntax_option_type fl = std::regex_constants::syntax_option_type::icase;
+    // 编译一个正则表达式语句
+    std::regex regExpress("((\\d{1,2})(月|-| |/)(\\d{1,2}))", fl);
+    
+    if(regex_search(input, match, regExpress))
+    {
+        std::string strDate = input.substr(match.position(0), match.length(0));
+        std::smatch match2, match3;
+        std::regex regExpress2("(\\d{1,2})", fl);
+        
+        if(regex_search(strDate, match2, regExpress2))
+        {
+            month = strDate.substr(match2.position(0), match2.length(0));
+            
+            if(month.size() == 1)
+                month = "0" + month;
+            
+            strDate = strDate.substr(match2.length(0));
+            
+            if(regex_search(strDate.substr(), match3, regExpress2))
+            {
+                day = strDate.substr(match3.position(0), match3.length(0));
+                
+                if(day.size() == 1)
+                    day = "0" + day;
+                
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+enHoroscopeType wordAnalysisMgr::GetHoroscopeType(const std::string& month, const std::string& day)
+{
+    if(month == "01")
+    {
+        //摩羯座
+        if(day >= "01" && day <= "19")
+            return Capricorn;
+        //水瓶
+        if(day >= "20" && day <= "31")
+            return Aquarius;
+    }
+    if(month == "02")
+    {
+        //水瓶
+        if(day >= "01" && day <= "18")
+            return  Aquarius;
+        //双鱼
+        if(day >= "19" && day <= "29")
+            return Pisces;
+    }
+    if(month == "03")
+    {
+        //双鱼
+        if(day >= "01" && day <= "20")
+            return Pisces;
+        //白羊
+        if(day >= "21" && day <= "31")
+            return Aries;
+    }
+    if(month == "04")
+    {
+        //白羊
+        if(day >= "01" && day <= "19")
+            return Aries;
+        //金牛座
+        if(day >= "20" && day <= "30")
+            return Taurus;
+    }
+    if(month == "05")
+    {
+        //金牛座
+        if(day >= "01" && day <= "21")
+            return Taurus;
+        //双子座
+        if(day >= "22" && day <= "31")
+            return Gemini;
+    }
+    if(month == "06")
+    {
+        //双子座
+        if(day >= "01" && day <= "20")
+            return Gemini;
+        //巨蟹座
+        if(day >= "21" && day <= "30")
+            return Cancer;
+    }
+    if(month == "07")
+    {
+        //巨蟹座
+        if(day >= "01" && day <= "21")
+            return Taurus;
+        //狮子座
+        if(day >= "22" && day <= "31")
+            return Leo;
+    }
+    if(month == "08")
+    {
+        //狮子座
+        if(day >= "01" && day <= "22")
+            return Leo;
+        //处女座
+        if(day >= "23" && day <= "31")
+            return Virgo;
+    }
+    if(month == "09")
+    {
+        //处女座
+        if(day >= "01" && day <= "22")
+            return Virgo;
+        //天秤座
+        if(day >= "23" && day <= "30")
+            return Libra;
+    }
+    if(month == "10")
+    {
+        //天秤座
+        if(day >= "01" && day <= "22")
+            return Libra;
+        //天蝎座
+        if(day >= "23" && day <= "31")
+            return Scorpio;
+    }
+    if(month == "11")
+    {
+        //天蝎座
+        if(day >= "01" && day <= "21")
+            return Scorpio;
+        //射手座
+        if(day >= "22" && day <= "30")
+            return Sagittarius;
+    }
+    if(month == "12")
+    {
+        //射手座
+        if(day >= "01" && day <= "21")
+            return Sagittarius;
+        //摩羯座
+        if(day >= "22" && day <= "31")
+            return Capricorn;
+    }
+    return UnknownHoroscope;
+}
+
+
+enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
+	const std::string& input)
+{
+    std::string month;
+    std::string day;
+	if(wordAnalysisMgr::getMonthDay(input, month, day))
 	{
-		//双鱼
-		if((input >= "0219" && input <= "0229") || 
-		   (input >= "0301" && input <= "0320"))
-			return Pisces;
-
-		//水瓶座
-		if((input >= "0120" && input <= "0131") ||
-		   (input >= "0201" && input <= "0218"))
-			return Aquarius;
-
-		//摩羯座
-		if((input >= "1222" && input <= "1231") ||
-		   (input >= "0101" && input <= "0119"))
-			return Capricorn;	
-
-		//射手座
-		if((input >= "1122" && input <= "1130") ||
-		   (input >= "1201" && input <= "1221"))
-			return Sagittarius;	
-
-		//天蝎座
-		if((input >= "1023" && input <= "1031") ||
-		   (input >= "1101" && input <= "1121"))
-			return Scorpio;	
-
-		//天秤座
-		if((input >= "0923" && input <= "0930") ||
-		   (input >= "1001" && input <= "1022"))
-			return Libra;	
-
-		//处女座
-		if((input >= "0823" && input <= "0831") ||
-		   (input >= "0901" && input <= "0922"))
-			return Virgo;
-
-		//狮子座
-		if((input >= "0722" && input <= "0731") ||
-		   (input >= "0801" && input <= "0822"))
-			return Leo;
-
-		//巨蟹座
-		if((input >= "0621" && input <= "0630") ||
-		   (input >= "1001" && input <= "1022"))
-			return Cancer;
-
-		//双子座
-		if((input >= "0522" && input <= "0531") ||
-		   (input >= "0601" && input <= "0620"))
-			return Gemini;
-
-		//金牛座
-		if((input >= "0420" && input <= "0530") ||
-		   (input >= "0501" && input <= "0521"))
-			return Taurus;
-
-		//白羊座
-		if((input >= "0321" && input <= "0331") ||
-		   (input >= "0401" && input <= "0419"))
-			return Aries;
+        return wordAnalysisMgr::GetHoroscopeType(month, day);
 	}
 	else
 	{
-        input = origin;
-		if(input.find("双鱼") != std::string::npos)
+		if(input.find("双鱼") != std::string::npos ||
+           input.find("雙魚") != std::string::npos)
 			return Pisces;
 
 		if(input.find("水瓶") != std::string::npos)
@@ -111,7 +232,8 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 		if(input.find("射手") != std::string::npos)
 			return Sagittarius;
 
-		if(input.find("天蝎") != std::string::npos)
+		if(input.find("天蝎") != std::string::npos ||
+           input.find("天蠍") != std::string::npos)
 			return Scorpio;
 
 		if(input.find("天秤") != std::string::npos ||
@@ -119,7 +241,8 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 		   input.find("天枰") != std::string::npos)
 			return Libra;
 
-		if(input.find("处女") != std::string::npos)
+		if(input.find("处女") != std::string::npos ||
+           input.find("處女") != std::string::npos)
 			return Virgo;
 
 		if(input.find("狮子") != std::string::npos)
@@ -128,7 +251,8 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 		if(input.find("巨蟹") != std::string::npos)
 			return Cancer;
 
-		if(input.find("双子") != std::string::npos)
+		if(input.find("双子") != std::string::npos ||
+           input.find("雙子") != std::string::npos)
 			return Gemini;
 
 		if(input.find("金牛") != std::string::npos)
@@ -136,7 +260,6 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 
 		if(input.find("白羊") != std::string::npos)
 			return Aries;
-        
 	}
     return UnknownHoroscope;
 
@@ -153,7 +276,8 @@ enHoroscopeDate wordAnalysisMgr::GetHorosopeData(
        input.find("明日") != std::string::npos)
         return Tomorrow;
     
-    if(input.find("本周") != std::string::npos)
+    if(input.find("本周") != std::string::npos ||
+       input.find("本週") != std::string::npos)
         return ThisWeek;
     
     if(input.find("本月") != std::string::npos)
@@ -165,8 +289,19 @@ enHoroscopeDate wordAnalysisMgr::GetHorosopeData(
     return UnknownDate;
 }
 
+bool wordAnalysisMgr::IsBindCmd(const std::string& input)
+{
+    if(input.find("绑定") != std::string::npos)
+    {
+        return true;
+    }
+    return false;
+}
 
 
+
+
+//for test
 
 std::string wordAnalysisMgr::GetHoroscopeName(
 		const enHoroscopeType& type)
@@ -210,7 +345,7 @@ std::string wordAnalysisMgr::GetHoroscopeName(
 			return "白羊座";
 
         default:
-            return "error";
+            return "未知星座";
 	}
 
 }
@@ -236,7 +371,7 @@ std::string wordAnalysisMgr::GetHoroscopeDate(
             return "今年";
             
         default:
-            return "未来";
+            return "未知日期";
     }
 }
 
