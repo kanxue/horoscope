@@ -55,7 +55,7 @@ bool wordAnalysisMgr::containsSeperateMonthDay(
     std::smatch match;
     std::regex_constants::syntax_option_type fl = std::regex_constants::syntax_option_type::icase;
     // 编译一个正则表达式语句
-    std::regex regExpress("((\\d{1,2})(月|-| |/)(\\d{1,2}))", fl);
+    std::regex regExpress("((\\d{1,2})(月|-| |/|(\\.))(\\d{1,2}))", fl);
     
     if(regex_search(input, match, regExpress))
     {
@@ -245,7 +245,8 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
            input.find("處女") != std::string::npos)
 			return Virgo;
 
-		if(input.find("狮子") != std::string::npos)
+		if(input.find("狮子") != std::string::npos ||
+           input.find("獅子") != std::string::npos)
 			return Leo;
 
 		if(input.find("巨蟹") != std::string::npos)
@@ -277,13 +278,15 @@ enHoroscopeDate wordAnalysisMgr::GetHorosopeData(
         return Tomorrow;
     
     if(input.find("本周") != std::string::npos ||
-       input.find("本週") != std::string::npos)
+       input.find("本週") != std::string::npos ||
+       input.find("一周") != std::string::npos)
         return ThisWeek;
     
     if(input.find("本月") != std::string::npos)
         return ThisMonth;
 
-    if(input.find("今年") != std::string::npos)
+    if(input.find("今年") != std::string::npos ||
+       input.find("年度") != std::string::npos)
         return ThisYear;
 
     return UnknownDate;
