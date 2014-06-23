@@ -229,7 +229,8 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 		   input.find("山羊") != std::string::npos)
 			return Capricorn;
 
-		if(input.find("射手") != std::string::npos)
+		if(input.find("射手") != std::string::npos ||
+           input.find("人马") != std::string::npos)
 			return Sagittarius;
 
 		if(input.find("天蝎") != std::string::npos ||
@@ -238,7 +239,8 @@ enHoroscopeType wordAnalysisMgr::GetHoroscopeType(
 
 		if(input.find("天秤") != std::string::npos ||
 		   input.find("天平") != std::string::npos ||
-		   input.find("天枰") != std::string::npos)
+		   input.find("天枰") != std::string::npos ||
+           input.find("天称") != std::string::npos)
 			return Libra;
 
 		if(input.find("处女") != std::string::npos ||
