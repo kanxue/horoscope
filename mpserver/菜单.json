@@ -1,0 +1,59 @@
+
+{
+     "button":[
+     {	
+          "name":"运势",
+           "sub_button":[
+           {	
+               "type":"click",
+               "name":"今日运势",
+               "key":"FORTUNE_HOROSCOPE_TODAY"
+            },
+            {
+               "type":"click",
+               "name":"明日运势",
+               "key":"FORTUNE_HOROSCOPE_TOMORROW"
+            },
+            {
+               "type":"click",
+               "name":"本周运势",
+               "key":"FORTUNE_HOROSCOPE_WEEK"
+            },
+            {
+               "type":"click",
+               "name":"其他运势",
+               "key":"FORTUNE_HOROSCOPE_OTHERS"
+            }]
+      },
+      {
+           "name":"功能",
+           "sub_button":[
+           {	
+               "type":"click",
+               "name":"星座查询",
+               "key":"PLUGIN_HOROSCOPE_DETAIL"
+            },
+            {
+               "type":"click",
+               "name":"星座配对",
+               "key":"PLUGIN_HOROSCOPE_MATCH"
+            }]
+      },
+      {
+           "name":"我",
+           "sub_button":[
+           {	
+               "type":"click",
+               "name":"我的星座",
+               "key":"ME_HOROSCOPE_DETAIL"
+            },
+            {
+               "type":"view",
+               "name":"我的开运",
+               "url":"http://wd.koudai.com/vshop/1/H5/index.html?userid=80852"
+            }]
+       }]
+ }
+
+
+        string strJson = "{\"button\":[{\"name\":\"运势\",\"sub_button\":[{\"type\":\"click\",\"name\":\"今日运势\",\"key\":\"FORTUNE_HOROSCOPE_TODAY\"},{\"type\":\"click\",\"name\":\"明日运势\",\"key\":\"FORTUNE_HOROSCOPE_TOMORROW\"},{\"type\":\"click\",\"name\":\"本周运势\",\"key\":\"FORTUNE_HOROSCOPE_WEEK\"},{\"type\":\"click\",\"name\":\"其他运势\",\"key\":\"FORTUNE_HOROSCOPE_OTHERS\"}]},{\"name\":\"功能\",\"sub_button\":[{\"type\":\"click\",\"name\":\"星座查询\",\"key\":\"PLUGIN_HOROSCOPE_DETAIL\"},{\"type\":\"click\", \"name\":\"星座配对\",\"key\":\"PLUGIN_HOROSCOPE_MATCH\"}]},{\"name\":\"我\",\"sub_button\":[{\"type\":\"click\",\"name\":\"我的星座\",\"key\":\"ME_HOROSCOPE_DETAIL\"},{\"type\":\"view\",\"name\":\"我的开运\",\"url\":\"http://wd.koudai.com/vshop/1/H5/index.html?userid=80852\"}]}]}" ;
