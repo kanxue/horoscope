@@ -9,6 +9,7 @@
 
 enum RedisStatusCode {
     kRedisSuccess = 0,
+    kRedisKeyNotExists = 1,
     kRedisBasicError = -99,
     kRedisConnectError = -100,
     kRedisProtocolError = -101,

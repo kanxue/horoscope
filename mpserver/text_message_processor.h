@@ -19,6 +19,9 @@ public:
     virtual void Run();
 
 private:
+    void Process(mpserver::TextMessage* output_message);
+
+private:
     mpserver::TextMessage m_input_message;
 }; // class TextMessageProcessor
 

@@ -1,0 +1,12 @@
+package horoscope;
+
+import "horoscope/proto/basic.proto"
+
+message EchoRequest {
+    optional string msg = 1;
+}
+
+message EchoResponse {
+    optional string msg = 1;
+}
+

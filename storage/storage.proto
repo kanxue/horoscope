@@ -1,0 +1,66 @@
+package horoscope;
+
+message UserAttr {
+    optional string openid = 1;
+
+    optional int32 birth_year = 10;
+    optional int32 birth_month = 11;
+    optional int32 birth_day = 12;
+    optional int32 sex = 13;
+
+    optional int32 horoscope_type = 20;
+
+    optional int32 rule_id = 30;
+}
+
+message UserMessages {
+    optional string openid = 1;
+
+    message Item {
+        optional uint32 stamp = 1;
+        optional string content = 2;
+        optional int32 result_flag = 3;
+    }
+
+    repeated Item item_list = 10;
+}
+
+message UserLocations {
+    optional string openid = 1;
+
+    message Item {
+        optional uint32 stamp = 1;
+        optional double latitude = 2;
+        optional double longitude = 3;
+        optional double precision = 4;
+    }
+
+    repeated Item item_list = 10;
+}
+
+message LuckyMessage {
+    optional string date = 1;
+    optional int32 horoscope_type = 2;
+
+    optional string lucky_color = 10;
+    optional int32 lucky_number = 11;
+    optional int32 lucky_horoscope_type = 12;
+    optional string lucky_object = 13;
+    optional string today_star = 14;
+
+    optional string today_description = 20;
+}
+
+message HoroscopeAttr {
+    optional int32 type = 1;
+
+    optional int32 start_month = 10;
+    optional int32 start_day = 11;
+    optional int32 end_month = 12;
+    optional int32 end_day = 13;
+
+    optional string en_name = 20;
+    optional string zh_cn_name = 21;
+    optional string zh_tw_name = 22;
+}
+

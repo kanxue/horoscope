@@ -1,0 +1,26 @@
+package horoscope;
+
+message CommonHeader {
+    optional uint32 cmd_id = 1;
+    optional string client_version = 2;
+    optional string client_ip = 3;
+    optional string aes_key = 4;
+
+    optional int32 error_code = 10;
+    optional string error_msg = 11;
+}
+
+message CommonRequest {
+    optional CommonHeader header = 1;
+
+    optional bytes body = 2;
+}
+
+message CommonResponse {
+    optional CommonHeader header = 1;
+
+    optional bytes body = 2;
+}
+
+
+

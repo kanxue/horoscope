@@ -96,6 +96,10 @@ int RedisClient::Set(
         m_redis_client->set(key, value);
     } COMMON_TRY_CATCH;
 
+    if  (ret == 0) {
+        m_redis_client->save();
+    }
+
     return ret;
 }
 
@@ -117,6 +121,10 @@ int RedisClient::Get(
     try {
         *value = m_redis_client->get(key);
     } COMMON_TRY_CATCH;
+
+    if ((ret == 0) && *value == redis::client::missing_value()) {
+        return kRedisKeyNotExists;
+    }
 
     return ret;
 }
@@ -142,6 +150,10 @@ int RedisClient::Delete(const std::string& key)
         done = m_redis_client->del(key);
     } COMMON_TRY_CATCH;
 
+    if (ret == 0) {
+        m_redis_client->save();
+    }
+
     return ret;
 }
 
@@ -156,6 +168,10 @@ int RedisClient::Append(
         size_t length = m_redis_client->append(key, value);
         if (new_length) *new_length = length;
     } COMMON_TRY_CATCH;
+
+    if (ret == 0) {
+        m_redis_client->save();
+    }
 
     return ret;
 }

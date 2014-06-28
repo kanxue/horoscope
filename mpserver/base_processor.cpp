@@ -4,8 +4,10 @@
 #include "common/web/url.h"
 #include "thirdparty/glog/logging.h"
 
+#include "horoscope/mpserver/click_event_processor.h"
 #include "horoscope/mpserver/text_message_processor.h"
 #include "horoscope/mpserver/verify_token_processor.h"
+#include "horoscope/mpserver/view_event_processor.h"
 
 BaseProcessor* GenerateProcessor(
     const std::string& uri,
@@ -23,8 +25,15 @@ BaseProcessor* GenerateProcessor(
     }
 
     if (input.find("<MsgType><![CDATA[text]]></MsgType>") != std::string::npos) {
-        TextMessageProcessor* real_processor = new TextMessageProcessor(uri, input, output);
-        return reinterpret_cast<BaseProcessor*>(real_processor);
+        return new TextMessageProcessor(uri, input, output);
+    } else if (input.find("<MsgType><![CDATA[event]]></MsgType>") != std::string::npos) {
+        if (input.find("<Event><![CDATA[CLICK]]></Event>") != std::string::npos) {
+            return new ClickEventProcessor(uri, input, output);
+        } else if (input.find("<Event><![CDATA[VIEW]]></Event>") != std::string::npos) {
+            return new ViewEventProcessor(uri, input, output);
+        } else {
+            LOG(ERROR) << "UNKOWN event type. input [" << input << "]";
+        }
     }
 
     LOG(ERROR)

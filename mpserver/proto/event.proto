@@ -38,3 +38,12 @@ message ClickEvent {
     optional string EventKey = 6;
 }
 
+message ViewEvent {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Event = 5;
+    optional string EventKey = 6;
+}
+
