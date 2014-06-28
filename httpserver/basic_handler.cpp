@@ -5,7 +5,6 @@
 #include "common/net/http/http_response.h"
 
 #include "horoscope/httpserver/secure_functions.h"
-#include "horoscope/proto/error_code.h"
 #include "horoscope/proto/horoscope_def.h"
 
 BasicHandler::BasicHandler(
@@ -34,6 +33,9 @@ void BasicHandler::BeforeHandle()
     m_request_uri = m_request->uri();
     m_request_data = m_request->http_body();
     m_response_data.clear();
+
+    LOG(DEBUG) << __func__ << " uri [" << m_request_uri
+               << "] request_size " << m_request_data.size();
 }
 
 void BasicHandler::AfterHandler()
@@ -42,12 +44,18 @@ void BasicHandler::AfterHandler()
     m_response->SetHeader("Content-Type", "text/plain");
     m_response->SetHeader("Content-Length", length);
     m_response->set_body(m_response_data);
+
+    LOG(DEBUG) << __func__ << " uri [" << m_request_uri
+               << "] response_size " << m_response_data.size();
 }
 
 void BasicHandler::MakeErrorResponse(int error_code)
 {
     m_response_data = StringFormat(
         "error: %d[%s]", error_code, ErrorMsg(error_code).c_str());
+
+    LOG(ERROR) << __func__ << " uri [" << m_request_uri
+               << "] " << m_response_data;
 }
 
 BasicSecureHandler::BasicSecureHandler(

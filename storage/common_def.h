@@ -54,6 +54,7 @@ enum enHoroscopeDate
 #define INPUT_HOROSCOPE_WITH_BIND_WORDING "请绑定你的星座，比如：绑定天蝎"
 #define INPUT_OTHER_HOROSCOPE_WORDING "请输入你要查询的星座，比如：天蝎座"
 #define INPUT_MODIFY_HOROSCOPE_WORDING "若想修改你的星座，请回复绑定指令。比如：绑定天蝎"
+#define BIND_SUCCESS_WORDINGF "绑定成功啦 :-)"
 
 int Astro2Horoscope(int astro_type);
 int Horoscope2Astro(int horoscope_type);

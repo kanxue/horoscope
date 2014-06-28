@@ -41,7 +41,7 @@ public:
 
 class AesSecureFunction : public BasicSecureFunction {
 public:
-    AesSecureFunction(const std::string& key_data)
+    explicit AesSecureFunction(const std::string& key_data = "")
         : BasicSecureFunction(key_data)
     {}
 
@@ -59,7 +59,7 @@ public:
 
 class Base64SecureFunction : public BasicSecureFunction {
 public:
-    Base64SecureFunction(const std::string& key_data)
+    explicit Base64SecureFunction(const std::string& key_data = "")
         : BasicSecureFunction(key_data)
     {}
 
@@ -77,7 +77,7 @@ public:
 
 class Base64AndAesSecureFunction : public BasicSecureFunction {
 public:
-    Base64AndAesSecureFunction(const std::string& key_data)
+    explicit Base64AndAesSecureFunction(const std::string& key_data = "")
         : BasicSecureFunction(key_data)
     {}
 
@@ -92,42 +92,6 @@ public:
         const std::string& input,
         std::string* output);
 }; // class Base64AndAesSecureFunction
-
-template<typename Message, typename Func>
-class SecureProtoFunction {
-public:
-    SecureProtoFunction(const std::string& key_data)
-        : m_func(key_data)
-    {}
-
-    virtual ~SecureProtoFunction() {}
-
-public:
-    virtual bool Encode(
-        const Message& message,
-        std::string* output) {
-        std::string input;
-        if (!message.SerializeToString(&input)) {
-            return false;
-        }
-
-        return m_func.Encode(input, output);
-    }
-
-    virtual bool Decode(
-        const std::string& input,
-        Message* message) {
-        std::string output;
-        if (!m_func.Decode(input, &output)) {
-            return false;
-        }
-
-        return message->ParseFromString(output);
-    }
-
-private:
-    Func m_func;
-}; // class SecureProtoFunction
 
 #endif // HTTPSERVER_SECURE_FUNCTION_H_
 
