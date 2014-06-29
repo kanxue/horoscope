@@ -1,5 +1,6 @@
 #include "horoscope/mpserver/mp_handler.h"
 
+#include <algorithm>
 #include "common/base/scoped_ptr.h"
 #include "common/base/string/algorithm.h"
 #include "common/crypto/hash/sha1.h"

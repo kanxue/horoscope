@@ -47,8 +47,8 @@ void BaseHandler::Handler(
 
     done->Run();
 
-    ReplaceAll(&input, "\n", "");
-    ReplaceAll(&output, "\n", "");
+    ReplaceAllChars(&input, "\n", ' ');
+    ReplaceAllChars(&output, "\n", ' ');
 
     int64_t end = GetTimeStampInUs();
 

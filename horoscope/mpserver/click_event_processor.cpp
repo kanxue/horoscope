@@ -35,8 +35,7 @@ void ClickEventProcessor::Run()
     item.set_stamp(static_cast<uint32_t>(time(NULL)));
     item.set_content(m_input_event.eventkey());
     item.set_result_flag(0);
-    int ret = storage_client.AddUserMessages(
-        m_input_event.fromusername(), item);
+    storage_client.AddUserMessages(m_input_event.fromusername(), item);
 
     // process
     mpserver::TextMessage output_message;

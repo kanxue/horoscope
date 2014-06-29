@@ -38,8 +38,7 @@ void TextMessageProcessor::Run()
     item.set_stamp(static_cast<uint32_t>(time(NULL)));
     item.set_content(m_input_message.content());
     item.set_result_flag(0);
-    int ret = storage_client.AddUserMessages(
-        m_input_message.fromusername(), item);
+    storage_client.AddUserMessages(m_input_message.fromusername(), item);
 
     mpserver::TextMessage output_message;
     Process(&output_message);
