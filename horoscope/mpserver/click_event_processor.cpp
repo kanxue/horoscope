@@ -66,47 +66,63 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
     StorageRedisClient redis_client;
     StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
 
+    bool has_horoscope = false;
+    std::string head = GetUtf8String("ÐÇ×ù : ");
     horoscope::UserAttr userattr;
     int ret = redis_client.GetUserAttr(openid, &userattr);
-    if (ret != 0) {
-        resp_content = GetUtf8String(INPUT_BIRTHDAY_WORDING);
-    } else {
-        std::string head = GetUtf8String("ÐÇ×ù : ");
+    if (ret == 0) {
         horoscope::HoroscopeAttr horoscope_attr;
         ret = redis_client.GetHoroscopeAttr(
             userattr.horoscope_type(), &horoscope_attr);
         if (ret == 0) {
+            has_horoscope = true;
             head.append(horoscope_attr.zh_cn_name());
             head.append("\n");
         }
+    }
 
-        std::string mysql_content;
-        const std::string& event_key = m_input_event.eventkey();
-        int astro = Horoscope2Astro(userattr.horoscope_type());
+    std::string mysql_content;
+    const std::string& event_key = m_input_event.eventkey();
+    int astro = Horoscope2Astro(userattr.horoscope_type());
 
-        if (event_key == "FORTUNE_HOROSCOPE_TODAY") {
+    if (event_key == "FORTUNE_HOROSCOPE_TODAY") {
+        if (has_horoscope) {
             ret = mysql_client.GetTodayForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
-        } else if (event_key == "FORTUNE_HOROSCOPE_TOMORROW") {
+        } else {
+            resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
+        }
+    } else if (event_key == "FORTUNE_HOROSCOPE_TOMORROW") {
+        if (has_horoscope) {
             ret = mysql_client.GetTomorrowForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
-        } else if (event_key == "FORTUNE_HOROSCOPE_WEEK") {
+        } else {
+            resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
+        }
+    } else if (event_key == "FORTUNE_HOROSCOPE_WEEK") {
+        if (has_horoscope) {
             ret = mysql_client.GetTswkForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
-        } else if (event_key == "FORTUNE_HOROSCOPE_OTHERS") {
-            resp_content = GetUtf8String(INPUT_OTHER_HOROSCOPE_WORDING);
-        } else if (event_key == "PLUGIN_HOROSCOPE_DETAIL") {
-            ret = redis_client.GetAllHoroscopeAttr(&resp_content);
-        } else if (event_key == "PLUGIN_HOROSCOPE_MATCH") {
-            resp_content = GetUtf8String(NOT_IMPLEMENT_WORDING);
-        } else if (event_key == "ME_HOROSCOPE_DETAIL") {
+        } else {
+            resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
+        }
+    } else if (event_key == "FORTUNE_HOROSCOPE_OTHERS") {
+        resp_content = GetUtf8String(INPUT_OTHER_HOROSCOPE_WORDING);
+    } else if (event_key == "PLUGIN_HOROSCOPE_DETAIL") {
+        ret = redis_client.GetAllHoroscopeAttr(&resp_content);
+    } else if (event_key == "PLUGIN_HOROSCOPE_MATCH") {
+        resp_content = GetUtf8String(NOT_IMPLEMENT_WORDING);
+    } else if (event_key == "ME_HOROSCOPE_DETAIL") {
+        if (has_horoscope) {
             resp_content = head;
             resp_content.append("\n");
             resp_content.append(GetUtf8String(INPUT_MODIFY_HOROSCOPE_WORDING));
         } else {
-            LOG(ERROR) << "unkown event type [" << event_key << "]";
-            resp_content = GetUtf8String(NOT_IMPLEMENT_WORDING);
+            resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
         }
+    } else {
+        LOG(ERROR) << "unkown event type [" << event_key << "]";
+        resp_content = GetUtf8String(NOT_IMPLEMENT_WORDING);
     }
 
     if (resp_content.empty()) {

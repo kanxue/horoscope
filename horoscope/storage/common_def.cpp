@@ -171,3 +171,25 @@ int GetHoroscopeTypeByText(const std::string& origin)
     return HoroscopeType_UnknownHoroscope;
 }
 
+int GetDateByText(const std::string& origin)
+{
+    if(origin.find("今天") != std::string::npos ||
+       origin.find("今日") != std::string::npos)
+        return Today;
+    
+    if(origin.find("明天") != std::string::npos ||
+       origin.find("明日") != std::string::npos)
+        return Tomorrow;
+    
+    if(origin.find("本周") != std::string::npos)
+        return ThisWeek;
+    
+    if(origin.find("本月") != std::string::npos)
+        return ThisMonth;
+
+    if(origin.find("今年") != std::string::npos)
+        return ThisYear;
+
+    return UnknownDate;
+}
+

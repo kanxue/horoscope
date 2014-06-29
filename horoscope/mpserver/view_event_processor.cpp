@@ -25,7 +25,7 @@ void ViewEventProcessor::Run()
         return;
     }
 
-    // TODO(boxerzhang) record view action.
+    // TODO(kanxue) record view action.
 
     // just log it.
     LOG(INFO) << "[VIEW_EVENT] " << m_input_event.ShortDebugString();

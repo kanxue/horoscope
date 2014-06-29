@@ -73,6 +73,8 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
 
     int ret = 0;
     int horoscope_type = GetHoroscopeTypeByText(content);
+    int date_type = GetDateByText(content);
+
     if (horoscope_type == HoroscopeType_UnknownHoroscope) {
         horoscope::UserAttr userattr;
         ret = redis_client.GetUserAttr(
@@ -99,13 +101,34 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
             ret = redis_client.MergeUserAttr(
                 m_input_message.fromusername(), userattr);
             if (ret == 0) {
-                resp_content.append(GetUtf8String(BIND_SUCCESS_WORDINGF));
+                resp_content.append(GetUtf8String(BIND_SUCCESS_WORDING));
             }
 
         } else {
             std::string mysql_content;
             int astro = Horoscope2Astro(horoscope_type);
-            ret = mysql_client.GetTodayForture(astro, &mysql_content);
+            switch (date_type) {
+            case Today:
+                ret = mysql_client.GetTodayForture(astro, &mysql_content);
+                break;
+
+            case Tomorrow:
+                ret = mysql_client.GetTomorrowForture(astro, &mysql_content);
+                break;
+
+            case ThisWeek:
+                ret = mysql_client.GetTswkForture(astro, &mysql_content);
+                break;
+
+            case ThisMonth:
+            case ThisYear:
+            case UnknownDate:
+            default:
+                // TODO(kanxue) use today first.
+                ret = mysql_client.GetTodayForture(astro, &mysql_content);
+                break;
+            }
+
             if (ret == 0) resp_content.append(mysql_content);
         }
 

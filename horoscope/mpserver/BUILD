@@ -7,7 +7,9 @@ cc_library(
         'mp_handler.cpp',
 
         'click_event_processor.cpp',
+        'subscribe_event_processor.cpp',
         'text_message_processor.cpp',
+        'unsubscribe_event_processor.cpp',
         'view_event_processor.cpp',
     ],
     deps = [

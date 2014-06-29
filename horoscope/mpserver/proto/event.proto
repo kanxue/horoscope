@@ -8,6 +8,14 @@ message SubscribeEvent {
     optional string Event = 5;
 }
 
+message UnSubscribeEvent {
+    optional string ToUserName = 1;
+    optional string FromUserName = 2;
+    optional uint32 CreateTime = 3;
+    optional string MsgType = 4;
+    optional string Event = 5;
+}
+
 message ScanEvent {
     optional string ToUserName = 1;
     optional string FromUserName = 2;

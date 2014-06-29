@@ -5,7 +5,9 @@
 #include "thirdparty/glog/logging.h"
 
 #include "horoscope/mpserver/click_event_processor.h"
+#include "horoscope/mpserver/subscribe_event_processor.h"
 #include "horoscope/mpserver/text_message_processor.h"
+#include "horoscope/mpserver/unsubscribe_event_processor.h"
 #include "horoscope/mpserver/verify_token_processor.h"
 #include "horoscope/mpserver/view_event_processor.h"
 
@@ -31,6 +33,10 @@ BaseProcessor* GenerateProcessor(
             return new ClickEventProcessor(uri, input, output);
         } else if (input.find("<Event><![CDATA[VIEW]]></Event>") != std::string::npos) {
             return new ViewEventProcessor(uri, input, output);
+        } else if (input.find("<Event><![CDATA[subscribe]]></Event>") != std::string::npos) {
+            return new SubscribeEventProcessor(uri, input, output);
+        } else if (input.find("<Event><![CDATA[unsubscribe]]></Event>") != std::string::npos) {
+            return new UnSubscribeEventProcessor(uri, input, output);
         } else {
             LOG(ERROR) << "UNKOWN event type. input [" << input << "]";
         }
