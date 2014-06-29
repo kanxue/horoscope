@@ -1,4 +1,0 @@
-horoscope
-=========
-
-horoscope project
