@@ -66,7 +66,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
     StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
 
     bool has_horoscope = false;
-    std::string head = GetUtf8String("星座 : ");
+    std::string head = GetUtf8String("");
     horoscope::UserAttr userattr;
     int ret = redis_client.GetUserAttr(openid, &userattr);
     if (ret == 0) {
@@ -76,7 +76,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
         if (ret == 0) {
             has_horoscope = true;
             head.append(horoscope_attr.zh_cn_name());
-            head.append("\n");
+	    // head.append("\n");
         }
     }
 
@@ -86,13 +86,15 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
 
     if (event_key == "FORTUNE_HOROSCOPE_TODAY") {
         if (has_horoscope) {
-            ret = mysql_client.GetTodayForture(astro, &mysql_content);
+          head.append(" 今日\n\n"); 
+	  ret = mysql_client.GetTodayForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
         } else {
             resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
         }
     } else if (event_key == "FORTUNE_HOROSCOPE_TOMORROW") {
         if (has_horoscope) {
+	  head.append(" 明日\n\n");
             ret = mysql_client.GetTomorrowForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
         } else {
@@ -100,6 +102,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
         }
     } else if (event_key == "FORTUNE_HOROSCOPE_WEEK") {
         if (has_horoscope) {
+	  head.append(" 本周\n\n");
             ret = mysql_client.GetTswkForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
         } else {
