@@ -86,7 +86,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
 
     if (event_key == "FORTUNE_HOROSCOPE_TODAY") {
         if (has_horoscope) {
-          head.append(GetUtf8String(" 今日"));
+          head.append(GetUtf8String("今日运势："));
 	  head.append("\n\n"); 
 	  ret = mysql_client.GetTodayForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
@@ -95,7 +95,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
         }
     } else if (event_key == "FORTUNE_HOROSCOPE_TOMORROW") {
         if (has_horoscope) {
-	  head.append(GetUtf8String(" 明日"));
+	  head.append(GetUtf8String("明日运势："));
 	  head.append("\n\n");
             ret = mysql_client.GetTomorrowForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
@@ -104,7 +104,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
         }
     } else if (event_key == "FORTUNE_HOROSCOPE_WEEK") {
         if (has_horoscope) {
-	  head.append(GetUtf8String(" 本周"));
+	  head.append(GetUtf8String("本周运势："));
 	  head.append("\n\n");
             ret = mysql_client.GetTswkForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
