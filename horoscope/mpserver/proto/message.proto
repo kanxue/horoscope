@@ -62,3 +62,21 @@ message LinkMessage {
     optional fixed64 MsgId = 8;
 }
 
+
+
+message ArticleItem{
+    optional string Title = 1;
+    optional string Description = 2;
+    optional string PicUrl = 3;
+    optional string Url = 4;
+}
+
+message NewsMessage {
+    required string ToUserName = 1;
+    required string FromUserName = 2;
+    required uint32 CreateTime = 3;
+    required string MsgType = 4;
+    required uint32 ArticleCount = 5;
+    repeated ArticleItem ArticleItemList = 6;
+}
+

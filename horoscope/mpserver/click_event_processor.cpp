@@ -33,24 +33,73 @@ void ClickEventProcessor::Run()
     StorageRedisClient storage_client;
     horoscope::UserMessages::Item item;
     item.set_stamp(static_cast<uint32_t>(time(NULL)));
-    item.set_content(m_input_event.eventkey());
     item.set_result_flag(0);
     storage_client.AddUserMessages(m_input_event.fromusername(), item);
 
-    // process
-    mpserver::TextMessage output_message;
-    Process(&output_message);
+    const std::string& event_key = m_input_event.eventkey();
+    item.set_content(event_key);
+
+    if(event_key == "ARTICLES_MOST_RECENT"){
+
+        LOG(INFO) << "Clicked ARTICLES_MOST_RECENT ";
+
+        mpserver::LinkMessage output_message;
+        Process(&output_message);
 
     // serialize output.
-    m_output->clear();
-    if (!ProtoMessageToXmlWithRoot(output_message, m_output, &error)) {
-        LOG(ERROR)
-            << "text message to xml failed. message ["
-            << output_message.ShortDebugString()
-            << "] error [" << error << "]";
-        return;
+        m_output->clear();
+        if (!ProtoMessageToXmlWithRoot(output_message, m_output, &error)) {
+            LOG(ERROR)
+                << "text message to xml failed. message ["
+                << output_message.ShortDebugString()
+                << "] error [" << error << "]";
+            return;
+        }
     }
+    else{
+        // process
+        mpserver::TextMessage output_message;
+        Process(&output_message);
+
+            // serialize output.
+        m_output->clear();
+        if (!ProtoMessageToXmlWithRoot(output_message, m_output, &error)) {
+            LOG(ERROR)
+                << "text message to xml failed. message ["
+                << output_message.ShortDebugString()
+                << "] error [" << error << "]";
+            return;
+        }
+    }
+    
+
+    
 }
+
+void ClickEventProcessor::Process(mpserver::NewsMessage* output_message);
+{
+    LOG(INFO) << "clickEventProcessor::Process(mpserver::NewsMessage* output_message) ";
+
+// swap src/dst.
+    const std::string& openid = m_input_event.fromusername();
+    output_message->set_tousername(openid);
+    output_message->set_fromusername(m_input_event.tousername());
+    output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    output_message->set_msgtype("news");
+
+    mpserver::ArticleItem article_item = output.add_articleitemlist();
+    article_item->set_title(GetUtf8String("女巫店12星座7月9日运势"));
+    article_item->set_picurl("https://mp.weixin.qq.com/cgi-bin/getimgdata?token=322727718&msgid=&mode=large&source=file&fileId=202659452&ow=-1");
+    article_item->set_url("http://mp.weixin.qq.com/s?__biz=MjM5NzAzMzkyMA==&mid=202659744&idx=1&sn=e0dd03108f4d36ca9b62ca4b6fd8b047#rd");
+
+    rticle_item = output.add_articleitemlist();
+    article_item->set_title(GetUtf8String("女巫店12星座7月9日运势"));
+    article_item->set_picurl("https://mp.weixin.qq.com/cgi-bin/getimgdata?token=322727718&msgid=&mode=large&source=file&fileId=202659487&ow=-1");
+    article_item->set_url("http://mp.weixin.qq.com/s?__biz=MjM5NzAzMzkyMA==&mid=202659744&idx=2&sn=2dd91b99e9d653b0e729ceac90cd5d7c#rd");
+
+    output_message->setarticlcount(output_message.articleitemlist_size());
+}
+
 
 void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
 {
@@ -86,9 +135,9 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
 
     if (event_key == "FORTUNE_HOROSCOPE_TODAY") {
         if (has_horoscope) {
-          head.append(GetUtf8String("今日运势："));
-	  head.append("\n\n"); 
-	  ret = mysql_client.GetTodayForture(astro, &mysql_content);
+            head.append(GetUtf8String("今日运势："));
+	        head.append("\n\n"); 
+	        ret = mysql_client.GetTodayForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
         } else {
             resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
@@ -125,7 +174,8 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
         } else {
             resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
         }
-    } else {
+    } 
+    else {
         LOG(ERROR) << "unkown event type [" << event_key << "]";
         resp_content = GetUtf8String(NOT_IMPLEMENT_WORDING);
     }

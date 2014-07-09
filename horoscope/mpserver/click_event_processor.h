@@ -22,6 +22,8 @@ public:
 private:
     void Process(mpserver::TextMessage* output_message);
 
+    void Process(mpserver::NewsMessage* output_message);
+
 private:
     mpserver::ClickEvent m_input_event;
 }; // class ClickEventProcessor
