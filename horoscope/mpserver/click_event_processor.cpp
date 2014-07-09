@@ -41,9 +41,7 @@ void ClickEventProcessor::Run()
 
     if(event_key == "ARTICLES_MOST_RECENT"){
 
-        LOG(INFO) << "Clicked ARTICLES_MOST_RECENT ";
-
-        mpserver::LinkMessage output_message;
+        mpserver::NewsMessage output_message;
         Process(&output_message);
 
     // serialize output.
@@ -76,10 +74,8 @@ void ClickEventProcessor::Run()
     
 }
 
-void ClickEventProcessor::Process(mpserver::NewsMessage* output_message);
+void ClickEventProcessor::Process(mpserver::NewsMessage* output_message)
 {
-    LOG(INFO) << "clickEventProcessor::Process(mpserver::NewsMessage* output_message) ";
-
 // swap src/dst.
     const std::string& openid = m_input_event.fromusername();
     output_message->set_tousername(openid);
@@ -87,17 +83,18 @@ void ClickEventProcessor::Process(mpserver::NewsMessage* output_message);
     output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
     output_message->set_msgtype("news");
 
-    mpserver::ArticleItem article_item = output.add_articleitemlist();
+    mpserver::Articles* articles = output_message->mutable_articles();
+    mpserver::ArticleItem* article_item = articles->add_item();
     article_item->set_title(GetUtf8String("女巫店12星座7月9日运势"));
-    article_item->set_picurl("https://mp.weixin.qq.com/cgi-bin/getimgdata?token=322727718&msgid=&mode=large&source=file&fileId=202659452&ow=-1");
+    article_item->set_picurl("http://mmbiz.qpic.cn/mmbiz/jGPzXFib2qibTGPZp8ccpFHVHicjZjuRZ9JVsed2cViaKRQkQN3VdMNuwOWRt7EomURiaZhsBHRyZuibCJ9Mt7Z49mog/0");
     article_item->set_url("http://mp.weixin.qq.com/s?__biz=MjM5NzAzMzkyMA==&mid=202659744&idx=1&sn=e0dd03108f4d36ca9b62ca4b6fd8b047#rd");
 
-    rticle_item = output.add_articleitemlist();
-    article_item->set_title(GetUtf8String("女巫店12星座7月9日运势"));
-    article_item->set_picurl("https://mp.weixin.qq.com/cgi-bin/getimgdata?token=322727718&msgid=&mode=large&source=file&fileId=202659487&ow=-1");
+    article_item = articles->add_item();
+    article_item->set_title(GetUtf8String("女巫店测试：你的五根手指注定你的爱情，真挺准的！"));
+    article_item->set_picurl("http://mmbiz.qpic.cn/mmbiz/jGPzXFib2qibTGPZp8ccpFHVHicjZjuRZ9J0MEKOBfFOoPdQ3TnJE37cmlbmMZZhpclgxGR1EnCNeOkiceTlRiaRscg/0");
     article_item->set_url("http://mp.weixin.qq.com/s?__biz=MjM5NzAzMzkyMA==&mid=202659744&idx=2&sn=2dd91b99e9d653b0e729ceac90cd5d7c#rd");
 
-    output_message->setarticlcount(output_message.articleitemlist_size());
+    output_message->set_articlecount(articles->item_size());
 }
 
 

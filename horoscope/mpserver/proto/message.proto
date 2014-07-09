@@ -71,12 +71,16 @@ message ArticleItem{
     optional string Url = 4;
 }
 
+message Articles{
+    repeated ArticleItem item = 2;
+}
+
 message NewsMessage {
     required string ToUserName = 1;
     required string FromUserName = 2;
     required uint32 CreateTime = 3;
     required string MsgType = 4;
     required uint32 ArticleCount = 5;
-    repeated ArticleItem ArticleItemList = 6;
+    required Articles Articles = 6;
 }
 
