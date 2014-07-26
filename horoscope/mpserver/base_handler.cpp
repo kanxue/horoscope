@@ -1,6 +1,7 @@
 #include "horoscope/mpserver/base_handler.h"
 
 #include "common/base/string/algorithm.h"
+#include "common/base/string/format.h"
 #include "common/base/string/string_number.h"
 #include "common/net/http/http_server.h"
 
@@ -48,7 +49,7 @@ void BaseHandler::Handler(
     done->Run();
 
     ReplaceAllChars(&input, "\n", ' ');
-    ReplaceAllChars(&output, "\n", ' ');
+    output = ReplaceAll(output, "\n", "");
 
     int64_t end = GetTimeStampInUs();
 

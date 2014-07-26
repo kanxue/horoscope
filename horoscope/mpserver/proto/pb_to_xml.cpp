@@ -10,9 +10,9 @@
 void AppendAsXml(const std::string& key, const std::string& value, std::string* xml, bool as_binary = false)
 {
     if (!as_binary)
-        StringAppend(xml, '<', key, '>', value, "</", key, ">\n");
+        StringAppend(xml, '<', key, '>', value, "</", key, '>');
     else
-        StringAppend(xml, '<', key, "><![CDATA[", value, "]]></", key, ">\n");
+        StringAppend(xml, '<', key, "><![CDATA[", value, "]]></", key, '>');
 }
 
 const std::string& SimpleStoa(const std::string& str)
@@ -126,20 +126,20 @@ bool ProtoMessageToXmlWithoutRoot(
             if (field->is_repeated()) {
                 int field_size = reflection->FieldSize(message, field);
                 for (int index = 0; index < field_size; index++) {
-                    StringAppend(xml_string, '<', field->name(), ">\n");
+                    StringAppend(xml_string, '<', field->name(), '>');
                     if (!ProtoMessageToXmlWithoutRoot(
                             reflection->GetRepeatedMessage(message, field, index), xml_string, error)) {
                         return false;
                     }
-                    StringAppend(xml_string, "</", field->name(), ">\n");
+                    StringAppend(xml_string, "</", field->name(), '>');
                 }
             } else {
-                StringAppend(xml_string, '<', field->name(), ">\n");
+                StringAppend(xml_string, '<', field->name(), '>');
                 if (!ProtoMessageToXmlWithoutRoot(
                         reflection->GetMessage(message, field), xml_string, error)) {
                     return false;
                 }
-                StringAppend(xml_string, "</", field->name(), ">\n");
+                StringAppend(xml_string, "</", field->name(), '>');
             }
             break;
         }

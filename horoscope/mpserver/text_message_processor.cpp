@@ -69,7 +69,7 @@ bool getMysqlFortuneContent(int horoscope_type, int date_type, std::string& cont
         return false;
     }
 
-    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    StorageMysqlClient mysql_client;
     std::string mysql_content;
     switch (date_type) {
             case Today:
@@ -169,8 +169,8 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
             uer_horoscope_type = userattr.horoscope_type();
         }
 
-    LOG(INFO) << "uer_horoscope_type " << uer_horoscope_type;
-    LOG(INFO) << "date_type " << date_type;
+        LOG(INFO) << "uer_horoscope_type " << uer_horoscope_type;
+        LOG(INFO) << "date_type " << date_type;
 
 
         if (uer_horoscope_type != HoroscopeType_UnknownHoroscope) {

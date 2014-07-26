@@ -7,6 +7,7 @@
 #include "horoscope/storage/common_def.h"
 #include "horoscope/storage/storage_mysql_client.h"
 #include "horoscope/storage/storage_redis_client.h"
+#include "thirdparty/tinyxml/tinyxml.h"
 
 ClickEventProcessor::ClickEventProcessor(
     const std::string& uri,
@@ -69,10 +70,55 @@ void ClickEventProcessor::Run()
             return;
         }
     }
-    
-
-    
 }
+
+
+
+bool XmlToArticles(
+    const std::string& xml_string,
+    mpserver::Articles* articles,
+    std::string* error)
+{
+    TiXmlDocument document;
+    if (!document.Parse((xml_string + "\n").c_str())) {
+        if (error) {
+            error->assign("parse xml failed. msg [" + std::string(document.ErrorDesc()) + "]");
+            return false;
+        }
+    }
+
+    TiXmlNode* root = document.RootElement();
+    for (TiXmlNode* child = root->FirstChild(); child; child = child->NextSibling()) {
+        mpserver::ArticleItem* article_item = articles->add_item();
+            
+        TiXmlElement* element;
+
+        for(TiXmlNode* itemchild = child->FirstChild(); itemchild; itemchild = itemchild->NextSibling())
+        {
+            switch(itemchild->Type())
+            {
+                case TiXmlNode::ELEMENT:
+                {
+                    element = itemchild->ToElement();
+
+                    if(element->Value()==GetUtf8String("Title"))
+                        article_item->set_title(element->FirstChild()->Value());
+                    else if(element->Value()==GetUtf8String("Url"))
+                        article_item->set_url(element->FirstChild()->Value());
+                    else if(element->Value()==GetUtf8String("PicUrl"))
+                        article_item->set_picurl(element->FirstChild()->Value());
+                    else if(element->Value()==GetUtf8String("Description"))
+                        article_item->set_description(element->FirstChild()->Value());
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+    return true;
+}
+
 
 void ClickEventProcessor::Process(mpserver::NewsMessage* output_message)
 {
@@ -83,18 +129,23 @@ void ClickEventProcessor::Process(mpserver::NewsMessage* output_message)
     output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
     output_message->set_msgtype("news");
 
-    mpserver::Articles* articles = output_message->mutable_articles();
-    mpserver::ArticleItem* article_item = articles->add_item();
-    article_item->set_title(GetUtf8String("女巫店12星座7月9日运势"));
-    article_item->set_picurl("http://mmbiz.qpic.cn/mmbiz/jGPzXFib2qibTGPZp8ccpFHVHicjZjuRZ9JVsed2cViaKRQkQN3VdMNuwOWRt7EomURiaZhsBHRyZuibCJ9Mt7Z49mog/0");
-    article_item->set_url("http://mp.weixin.qq.com/s?__biz=MjM5NzAzMzkyMA==&mid=202659744&idx=1&sn=e0dd03108f4d36ca9b62ca4b6fd8b047#rd");
+    std::string str_articles;
+    StorageMysqlClient mysql_client;
+    int ret = mysql_client.GetMostRecentArticles(&str_articles);
+    if(ret == 0)
+    {    
+        std::string error;
 
-    article_item = articles->add_item();
-    article_item->set_title(GetUtf8String("女巫店测试：你的五根手指注定你的爱情，真挺准的！"));
-    article_item->set_picurl("http://mmbiz.qpic.cn/mmbiz/jGPzXFib2qibTGPZp8ccpFHVHicjZjuRZ9J0MEKOBfFOoPdQ3TnJE37cmlbmMZZhpclgxGR1EnCNeOkiceTlRiaRscg/0");
-    article_item->set_url("http://mp.weixin.qq.com/s?__biz=MjM5NzAzMzkyMA==&mid=202659744&idx=2&sn=2dd91b99e9d653b0e729ceac90cd5d7c#rd");
-
-    output_message->set_articlecount(articles->item_size());
+        mpserver::Articles* articles = output_message->mutable_articles();
+        if(XmlToArticles(str_articles, articles, &error))
+        {
+            output_message->set_articlecount(articles->item_size());
+        }
+        else
+        {
+            LOG(ERROR) << error;
+        }
+    }
 }
 
 
@@ -109,7 +160,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
 
     std::string resp_content;
     StorageRedisClient redis_client;
-    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    StorageMysqlClient mysql_client;
 
     bool has_horoscope = false;
     std::string head = GetUtf8String("");
@@ -185,4 +236,6 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
 
     output_message->set_content(resp_content);
 }
+
+
 
