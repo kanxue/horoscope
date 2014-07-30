@@ -2,6 +2,8 @@
 
 #include "common/encoding/charset_converter.h"
 #include "common/text/regex/regex.h"
+#include "thirdparty/gflags/gflags.h"
+#include "thirdparty/glog/logging.h"
 
 int Astro2Horoscope(int astro_type)
 {
@@ -61,73 +63,204 @@ std::string GetUtf8String(const std::string& gbk_str)
     return out;
 }
 
-int GetHoroscopeTypeByText(const std::string& origin)
+
+
+
+bool contains4DigitMonthDay(
+		const std::string& origin,
+        std::string& month,
+        std::string& day)
 {
     Regex date_regex("(\\d{4})");
     std::string input;
-    if (date_regex.FullMatch(origin, &input)) {
-        //Ë®Æ¿×ù
-		if((input >= "0120" && input <= "0131") ||
-		   (input >= "0201" && input <= "0218"))
-			return HoroscopeType_Aquarius;
 
-		//Ë«Óã
-		if((input >= "0219" && input <= "0229") || 
-		   (input >= "0301" && input <= "0320"))
-			return HoroscopeType_Pisces;
+    if(date_regex.PartialMatch(origin, &input))
+    {
+        month = input.substr(0, 2);
+        day = input.substr(2);
+        return true;
+    }
+    return false;
+    
+}
 
-		//Ä¦ôÉ×ù
-		if((input >= "1222" && input <= "1231") ||
-		   (input >= "0101" && input <= "0119"))
-			return HoroscopeType_Capricorn;	
+bool containsSeperateMonthDay(const std::string& input,
+                                     std::string& month,
+                                     std::string& day)
+{
+    Regex date_regex("((\\d{1,2})(ÔÂ|-| |/|(\\.))(\\d{1,2}))");
+    std::string date;
+    
+    if(date_regex.PartialMatch(input, &date))
+    {
+        Regex detailDate_regex("(\\d{1,2})");
 
-		//ÉäÊÖ×ù
-		if((input >= "1122" && input <= "1130") ||
-		   (input >= "1201" && input <= "1221"))
-			return HoroscopeType_Sagittarius;	
+        if(detailDate_regex.PartialMatch(date, &month))
+        {           
+        	std::string strPartDate = date.substr(month.size());
 
-		//ÌìĞ«×ù
-		if((input >= "1023" && input <= "1031") ||
-		   (input >= "1101" && input <= "1121"))
-			return HoroscopeType_Scorpio;	
+            if(month.size() == 1)
+                month = "0" + month;
+                    
+            if(detailDate_regex.PartialMatch(strPartDate, &day))
+            {
+                if(day.size() == 1)
+                    day = "0" + day;
+                
+                return true;
+            }
+            return false;
+        }
+        LOG(ERROR) << "second INPUT match error. " << input;
+        return false;
+    }
+    else
+    {
+        LOG(ERROR) << "INPUT match error. " << input;
+        return false;
+    }
+}
 
-		//Ìì³Ó×ù
-		if((input >= "0923" && input <= "0930") ||
-		   (input >= "1001" && input <= "1022"))
-			return HoroscopeType_Libra;	
+bool getMonthDay(const std::string& input, std::string& month, std::string& day)
+{
+    std::string digitDate;
+    
+    if(containsSeperateMonthDay(input, month, day))
+    {
+        return true;
+    }
+    if(contains4DigitMonthDay(input, month, day))
+    {
+        return true;
+    }
+    return false;
+}
 
-		//´¦Å®×ù
-		if((input >= "0823" && input <= "0831") ||
-		   (input >= "0901" && input <= "0922"))
-			return HoroscopeType_Virgo;
+int GetHoroscopeType(const std::string& month, const std::string& day)
+{
+    if(month == "01")
+    {
+        //Ä¦ôÉ×ù
+        if(day >= "01" && day <= "19")
+            return HoroscopeType_Capricorn;
+        //Ë®Æ¿
+        if(day >= "20" && day <= "31")
+            return HoroscopeType_Aquarius;
+    }
+    if(month == "02")
+    {
+        //Ë®Æ¿
+        if(day >= "01" && day <= "18")
+            return  HoroscopeType_Aquarius;
+        //Ë«Óã
+        if(day >= "19" && day <= "29")
+            return HoroscopeType_Pisces;
+    }
+    if(month == "03")
+    {
+        //Ë«Óã
+        if(day >= "01" && day <= "20")
+            return HoroscopeType_Pisces;
+        //°×Ñò
+        if(day >= "21" && day <= "31")
+            return HoroscopeType_Aries;
+    }
+    if(month == "04")
+    {
+        //°×Ñò
+        if(day >= "01" && day <= "19")
+            return HoroscopeType_Aries;
+        //½ğÅ£×ù
+        if(day >= "20" && day <= "30")
+            return HoroscopeType_Taurus;
+    }
+    if(month == "05")
+    {
+        //½ğÅ£×ù
+        if(day >= "01" && day <= "21")
+            return HoroscopeType_Taurus;
+        //Ë«×Ó×ù
+        if(day >= "22" && day <= "31")
+            return HoroscopeType_Gemini;
+    }
+    if(month == "06")
+    {
+        //Ë«×Ó×ù
+        if(day >= "01" && day <= "20")
+            return HoroscopeType_Gemini;
+        //¾ŞĞ·×ù
+        if(day >= "21" && day <= "30")
+            return HoroscopeType_Cancer;
+    }
+    if(month == "07")
+    {
+        //¾ŞĞ·×ù
+        if(day >= "01" && day <= "21")
+            return HoroscopeType_Taurus;
+        //Ê¨×Ó×ù
+        if(day >= "22" && day <= "31")
+            return HoroscopeType_Leo;
+    }
+    if(month == "08")
+    {
+        //Ê¨×Ó×ù
+        if(day >= "01" && day <= "22")
+            return HoroscopeType_Leo;
+        //´¦Å®×ù
+        if(day >= "23" && day <= "31")
+            return HoroscopeType_Virgo;
+    }
+    if(month == "09")
+    {
+        //´¦Å®×ù
+        if(day >= "01" && day <= "22")
+            return HoroscopeType_Virgo;
+        //Ìì³Ó×ù
+        if(day >= "23" && day <= "30")
+            return HoroscopeType_Libra;
+    }
+    if(month == "10")
+    {
+        //Ìì³Ó×ù
+        if(day >= "01" && day <= "22")
+            return HoroscopeType_Libra;
+        //ÌìĞ«×ù
+        if(day >= "23" && day <= "31")
+            return HoroscopeType_Scorpio;
+    }
+    if(month == "11")
+    {
+        //ÌìĞ«×ù
+        if(day >= "01" && day <= "21")
+            return HoroscopeType_Scorpio;
+        //ÉäÊÖ×ù
+        if(day >= "22" && day <= "30")
+            return HoroscopeType_Sagittarius;
+    }
+    if(month == "12")
+    {
+        //ÉäÊÖ×ù
+        if(day >= "01" && day <= "21")
+            return HoroscopeType_Sagittarius;
+        //Ä¦ôÉ×ù
+        if(day >= "22" && day <= "31")
+            return HoroscopeType_Capricorn;
+    }
+    return HoroscopeType_UnknownHoroscope;
+}
 
-		//Ê¨×Ó×ù
-		if((input >= "0722" && input <= "0731") ||
-		   (input >= "0801" && input <= "0822"))
-			return HoroscopeType_Leo;
-
-		//¾ŞĞ·×ù
-		if((input >= "0621" && input <= "0630") ||
-		   (input >= "1001" && input <= "1022"))
-			return HoroscopeType_Cancer;
-
-		//Ë«×Ó×ù
-		if((input >= "0522" && input <= "0531") ||
-		   (input >= "0601" && input <= "0620"))
-			return HoroscopeType_Gemini;
-
-		//½ğÅ£×ù
-		if((input >= "0420" && input <= "0530") ||
-		   (input >= "0501" && input <= "0521"))
-			return HoroscopeType_Taurus;
-
-		//°×Ñò×ù
-		if((input >= "0321" && input <= "0331") ||
-		   (input >= "0401" && input <= "0419"))
-			return HoroscopeType_Aries;
-    } else {
-        input = origin;
-		if(input.find("Ë«Óã") != std::string::npos)
+int GetHoroscopeTypeByText(const std::string& input)
+{    	
+    std::string month;
+    std::string day;
+	if(getMonthDay(input, month, day))
+	{
+        return GetHoroscopeType(month, day);
+	}
+	else
+	{
+		if(input.find("Ë«Óã") != std::string::npos ||
+           input.find("ëpô~") != std::string::npos)
 			return HoroscopeType_Pisces;
 
 		if(input.find("Ë®Æ¿") != std::string::npos)
@@ -138,27 +271,33 @@ int GetHoroscopeTypeByText(const std::string& origin)
 		   input.find("É½Ñò") != std::string::npos)
 			return HoroscopeType_Capricorn;
 
-		if(input.find("ÉäÊÖ") != std::string::npos)
+		if(input.find("ÉäÊÖ") != std::string::npos ||
+           input.find("ÈËÂí") != std::string::npos)
 			return HoroscopeType_Sagittarius;
 
-		if(input.find("ÌìĞ«") != std::string::npos)
+		if(input.find("ÌìĞ«") != std::string::npos ||
+           input.find("ÌìÏ") != std::string::npos)
 			return HoroscopeType_Scorpio;
 
 		if(input.find("Ìì³Ó") != std::string::npos ||
 		   input.find("ÌìÆ½") != std::string::npos ||
-		   input.find("ÌìèÒ") != std::string::npos)
+		   input.find("ÌìèÒ") != std::string::npos ||
+           input.find("Ìì³Æ") != std::string::npos)
 			return HoroscopeType_Libra;
 
-		if(input.find("´¦Å®") != std::string::npos)
+		if(input.find("´¦Å®") != std::string::npos ||
+           input.find("ÌÅ®") != std::string::npos)
 			return HoroscopeType_Virgo;
 
-		if(input.find("Ê¨×Ó") != std::string::npos)
+		if(input.find("Ê¨×Ó") != std::string::npos ||
+           input.find("ª{×Ó") != std::string::npos)
 			return HoroscopeType_Leo;
 
 		if(input.find("¾ŞĞ·") != std::string::npos)
 			return HoroscopeType_Cancer;
 
-		if(input.find("Ë«×Ó") != std::string::npos)
+		if(input.find("Ë«×Ó") != std::string::npos ||
+           input.find("ëp×Ó") != std::string::npos)
 			return HoroscopeType_Gemini;
 
 		if(input.find("½ğÅ£") != std::string::npos)
@@ -167,7 +306,6 @@ int GetHoroscopeTypeByText(const std::string& origin)
 		if(input.find("°×Ñò") != std::string::npos)
 			return HoroscopeType_Aries;
 	}
-
     return HoroscopeType_UnknownHoroscope;
 }
 

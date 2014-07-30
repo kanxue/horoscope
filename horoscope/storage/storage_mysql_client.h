@@ -71,6 +71,9 @@ public:
         const int astro,
         std::string* content);
 
+    int GetMostRecentArticles(
+        std::string* content);
+
 private:
     int ConnectWithLock();
 

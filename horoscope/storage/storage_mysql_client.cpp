@@ -1,5 +1,6 @@
 #include "storage_mysql_client.h"
 
+#include "common/base/string/algorithm.h"
 #include "common/base/string/format.h"
 #include "common/system/time/datetime.h"
 
@@ -61,10 +62,13 @@ int StorageMysqlClient::GetForture(
     int num_rows = result.num_rows();
     LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
     content->clear();
+
     if (num_rows > 0) {
         result[0]["content"].to_string(*content);
     }
 
+    *content = ReplaceAll(*content, "\r\n", "\n");
+    
     return (content->empty()) ? 1 : 0;
 }
 
@@ -110,6 +114,31 @@ int StorageMysqlClient::GetTswkForture(
     if (num_rows > 0) {
         result[0]["content"].to_string(*content);
     }
+
+    *content = ReplaceAll(*content, "\r\n", "\n");
+
+    return (content->empty()) ? 1 : 0;
+}
+
+int StorageMysqlClient::GetMostRecentArticles(
+    std::string* content)
+{
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    int type = 0;
+    std::string sql = StringFormat(
+        "select content from mp_articles where type=%d "
+        "order by day desc limit 1;", type);
+    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    int num_rows = result.num_rows();
+    LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
+    content->clear();
+    if (num_rows > 0) {
+        result[0]["content"].to_string(*content);
+    }
+
+    ReplaceAllChars(content, "\r\n", '\n');
 
     return (content->empty()) ? 1 : 0;
 }
