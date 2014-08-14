@@ -2,6 +2,7 @@
 
 #include "common/base/string/algorithm.h"
 #include "common/base/string/concat.h"
+#include "common/base/string/string_number.h"
 #include "common/encoding/charset_converter.h"
 #include "common/encoding/pb_to_json.h"
 #include "common/text/regex/regex.h"
@@ -140,7 +141,25 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
 
             horoscope::UserAttr userattr;
             userattr.set_horoscope_type(horoscope_type);
-
+			
+			std::string month = "";
+			std::string day = "";
+			if(GetMonthDay(content, month, day)){
+				if(!month.empty() && !day.empty()) {
+					if(month[0] == '0') month = month.substr(1);
+					if(day[0] == '0') day = day.substr(1);
+					int nMonth = 0;
+					int nDay = 0;
+					ParseNumber(month.c_str(), &nMonth);
+					ParseNumber(day.c_str(), &nDay);
+					userattr.set_birth_month(nMonth);
+					userattr.set_birth_day(nDay);
+				}
+			} else {
+				userattr.set_birth_month(0);
+				userattr.set_birth_day(0);
+			}
+			
             ret = redis_client.MergeUserAttr(
                 m_input_message.fromusername(), userattr);
             if (ret == 0) {
@@ -156,7 +175,7 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
             }
         }
 
-        resp_content.append("\n");
+        resp_content.append("\n\n");
         resp_content.append(GetUtf8String(INPUT_MODIFY_HOROSCOPE_WORDING));
     } 
     else {

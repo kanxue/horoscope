@@ -84,3 +84,11 @@ message NewsMessage {
     required Articles Articles = 6;
 }
 
+message FortuneDailyReport{
+	optional string LuckyColor = 1;
+	optional string LuckyGoods = 2;
+	optional string LuckyAstro = 3;
+	optional string LuckyNumber = 4;
+	optional string LuckyStars = 5;
+}
+

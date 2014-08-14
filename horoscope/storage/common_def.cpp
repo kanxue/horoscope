@@ -121,7 +121,7 @@ bool containsSeperateMonthDay(const std::string& input,
     }
 }
 
-bool getMonthDay(const std::string& input, std::string& month, std::string& day)
+bool GetMonthDay(const std::string& input, std::string& month, std::string& day)
 {
     std::string digitDate;
     
@@ -196,7 +196,7 @@ int GetHoroscopeType(const std::string& month, const std::string& day)
     {
         //¾ŞĞ·×ù
         if(day >= "01" && day <= "21")
-            return HoroscopeType_Taurus;
+            return HoroscopeType_Cancer;
         //Ê¨×Ó×ù
         if(day >= "22" && day <= "31")
             return HoroscopeType_Leo;
@@ -253,7 +253,7 @@ int GetHoroscopeTypeByText(const std::string& input)
 {    	
     std::string month;
     std::string day;
-	if(getMonthDay(input, month, day))
+	if(GetMonthDay(input, month, day))
 	{
         return GetHoroscopeType(month, day);
 	}

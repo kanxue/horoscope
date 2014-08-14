@@ -70,7 +70,10 @@ public:
     int GetTswkForture(
         const int astro,
         std::string* content);
-
+		
+	int GetTodayFortuneReport(
+		std::string* content);
+		
     int GetMostRecentArticles(
         std::string* content);
 

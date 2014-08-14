@@ -12,6 +12,7 @@ DEFINE_string(storage_mysql_host, "114.113.155.201", "mysql host");
 DEFINE_int32(storage_mysql_port, 3306, "mysql port");
 DEFINE_string(storage_mysql_user, "public", "mysql user");
 DEFINE_string(storage_mysql_pass, "forconnect", "mysql pass");
+DEFINE_int32(storage_mysql_timezone, 8, "time zone");
 
 StorageMysqlClientOptions& StorageMysqlClientOptions::GetDefaultOptions()
 {
@@ -66,9 +67,7 @@ int StorageMysqlClient::GetForture(
     if (num_rows > 0) {
         result[0]["content"].to_string(*content);
     }
-
     *content = ReplaceAll(*content, "\r\n", "\n");
-    
     return (content->empty()) ? 1 : 0;
 }
 
@@ -76,7 +75,7 @@ int StorageMysqlClient::GetTodayForture(
     const int astro,
     std::string* content)
 {
-    TimeSpan span(0, 0, 0, 0);
+    TimeSpan span(0, FLAGS_storage_mysql_timezone, 0, 0);
     DateTime now = DateTime::Now() - span;
     std::string day = now.ToString("yyyy-MM-dd 00:00:00");
 
@@ -88,8 +87,8 @@ int StorageMysqlClient::GetTomorrowForture(
     const int astro,
     std::string* content)
 {
-    TimeSpan span(1, 0, 0, 0);
-    DateTime now = DateTime::Now() - span;
+    TimeSpan span(1, FLAGS_storage_mysql_timezone, 0, 0);
+    DateTime now = DateTime::Now() + span;
     std::string day = now.ToString("yyyy-MM-dd 00:00:00");
 
     int type = 0;
@@ -114,11 +113,22 @@ int StorageMysqlClient::GetTswkForture(
     if (num_rows > 0) {
         result[0]["content"].to_string(*content);
     }
-
+	
     *content = ReplaceAll(*content, "\r\n", "\n");
 
     return (content->empty()) ? 1 : 0;
 }
+
+int StorageMysqlClient::GetTodayFortuneReport(
+    std::string* content)
+{
+	TimeSpan span(0, FLAGS_storage_mysql_timezone, 0, 0);
+    DateTime now = DateTime::Now() - span;
+    std::string day = now.ToString("yyyy-MM-dd 00:00:00");
+
+    int type = 8;
+    return GetForture(type, 0, day, content);
+}	
 
 int StorageMysqlClient::GetMostRecentArticles(
     std::string* content)

@@ -38,7 +38,7 @@ void WxMsgServerImpl::DoAccessToken(
     LOG(INFO) << __func__ << " request " << request->ShortDebugString();
 
     // TODO(kanxue) impl it.
-    response->set_access_token("mock access-token");
+    response->set_access_token("mock access-token from kanxue.");
     response->set_expired(1024);
     LOG(INFO) << __func__ << " response " << response->ShortDebugString();
 
