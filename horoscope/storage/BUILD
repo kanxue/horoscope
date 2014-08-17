@@ -5,6 +5,16 @@ proto_library(
 )
 
 cc_library(
+    name = 'common_memory_cache',
+    srcs = 'common_memory_cache.cpp',
+    deps = [
+        '//common/system/concurrency:concurrency',
+        '//thirdparty/glog:glog',
+        '//thirdparty/protobuf:protobuf',
+    ]
+)
+
+cc_library(
     name = 'redis_client',
     srcs = 'redis_client.cpp',
     deps = [

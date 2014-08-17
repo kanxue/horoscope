@@ -1,0 +1,20 @@
+
+package horoscope.routine;
+
+message HoroscopeRoutineItem {
+    optional int32 astro = 1;
+    optional string name = 2;
+
+    optional string lucky_color = 10;
+    optional int32 lucky_number = 11;
+    optional string lucky_astro = 12;
+    optional string lucky_object = 13;
+
+    optional int32 today_index = 20;
+    optional string today_forture = 21;
+}
+
+message HoroscopeRoutineList {
+    repeated HoroscopeRoutineItem list = 1;
+}
+
