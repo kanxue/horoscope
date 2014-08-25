@@ -8,6 +8,7 @@
 #include "common/text/regex/regex.h"
 #include "horoscope/mpserver/proto/pb_to_xml.h"
 #include "horoscope/mpserver/proto/xml_to_pb.h"
+#include "horoscope/mpserver/user_count_stat.h"
 #include "horoscope/storage/common_def.h"
 #include "horoscope/storage/storage_mysql_client.h"
 #include "horoscope/storage/storage_redis_client.h"
@@ -219,6 +220,13 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
         }
 
 
+    }
+
+    std::string user_count = UserCountStatSingleton::Instance(
+        ).GetAndReportUserCount(openid);
+    if (!user_count.empty()) {
+        resp_content.append("\n");
+        resp_content.append(GetUtf8String(user_count));
     }
 
     if (resp_content.empty()) {

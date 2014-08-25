@@ -6,6 +6,7 @@
 
 #include "horoscope/mpserver/proto/pb_to_xml.h"
 #include "horoscope/mpserver/proto/xml_to_pb.h"
+#include "horoscope/mpserver/user_count_stat.h"
 #include "horoscope/storage/common_def.h"
 #include "horoscope/storage/storage_mysql_client.h"
 #include "horoscope/storage/storage_redis_client.h"
@@ -329,6 +330,13 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
     else {
         LOG(ERROR) << "unkown event type [" << event_key << "]";
         resp_content = GetUtf8String(NOT_IMPLEMENT_WORDING);
+    }
+
+    std::string user_count = UserCountStatSingleton::Instance(
+        ).GetAndReportUserCount(openid);
+    if (!user_count.empty()) {
+        resp_content.append("\n");
+        resp_content.append(GetUtf8String(user_count));
     }
 
     if (resp_content.empty()) {

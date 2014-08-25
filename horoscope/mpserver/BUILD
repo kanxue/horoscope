@@ -10,6 +10,7 @@ cc_library(
         'subscribe_event_processor.cpp',
         'text_message_processor.cpp',
         'unsubscribe_event_processor.cpp',
+        'user_count_stat.cpp',
         'view_event_processor.cpp',
     ],
     deps = [

@@ -26,9 +26,33 @@
             }]
       },
       {
-           "type":"click",
-           "name":"最新文章",
-           "key":"ARTICLES_MOST_RECENT"
+          "name":"星座指数",
+           "sub_button":[
+           {  
+               "type":"click",
+               "name":"今日幸运色",
+               "key":"TODAY_LUCKY_COLOR"
+            },
+            {  
+               "type":"click",
+               "name":"今日开运物品",
+               "key":"TODAY_LUCKY_GOODS"
+            },
+            {  
+               "type":"click",
+               "name":"今日契合星座",
+               "key":"TODAY_LUCKY_ASTRO"
+            },
+            {  
+               "type":"click",
+               "name":"今日幸运数字",
+               "key":"TODAY_LUCKY_NUMBER"
+            },
+            {  
+               "type":"click",
+               "name":"今日星相",
+               "key":"TODAY_LUCKY_STARS"
+            }]
       },
       {
            "name":"我",
@@ -38,24 +62,25 @@
                "name":"我的星座",
                "key":"ME_HOROSCOPE_DETAIL"
             },
-            { 
-               "type":"click",
-               "name":"星座查询",
-               "key":"PLUGIN_HOROSCOPE_DETAIL"
-            },
             {
                "type":"view",
                "name":"我的开运",
                "url":"http://wd.koudai.com/vshop/1/H5/index.html?userid=80852"
+            },
+            { 
+               "type":"click",
+               "name":"星座查询",
+               "key":"PLUGIN_HOROSCOPE_DETAIL"
             }]
        }]
  }
 
 
-        string strJson = "{\"button\":[{\"name\":\"运势\",\"sub_button\":[{\"type\":\"click\",\"name\":\"今日运势\",\"key\":\"FORTUNE_HOROSCOPE_TODAY\"},{\"type\":\"click\",\"name\":\"明日运势\",\"key\":\"FORTUNE_HOROSCOPE_TOMORROW\"},{\"type\":\"click\",\"name\":\"本周运势\",\"key\":\"FORTUNE_HOROSCOPE_WEEK\"},{\"type\":\"click\",\"name\":\"其他运势\",\"key\":\"FORTUNE_HOROSCOPE_OTHERS\"}]},{\"type\":\"click\",
-           \"name\":\"最新文章\",
-           \"key\":\"ARTICLES_MOST_RECENT\"},{\"name\":\"我\",\"sub_button\":[{\"type\":\"click\",\"name\":\"我的星座\",\"key\":\"ME_HOROSCOPE_DETAIL\"},{ 
-               \"type\":\"click\",
-               \"name\":\"星座查询\",
-               \"key\":\"PLUGIN_HOROSCOPE_DETAIL\"
-            },{\"type\":\"view\",\"name\":\"我的开运\",\"url\":\"http://wd.koudai.com/vshop/1/H5/index.html?userid=80852\"}]}]}" ;
+        string strJson = "{\"button\":[{\"name\":\"运势\",\"sub_button\":[{\"type\":\"click\",\"name\":\"今日运势\",\"key\":\"FORTUNE_HOROSCOPE_TODAY\"},{\"type\":\"click\",\"name\":\"明日运势\",\"key\":\"FORTUNE_HOROSCOPE_TOMORROW\"},{\"type\":\"click\",\"name\":\"本周运势\",\"key\":\"FORTUNE_HOROSCOPE_WEEK\"},{\"type\":\"click\",\"name\":\"其他运势\",\"key\":\"FORTUNE_HOROSCOPE_OTHERS\"}]},{\"name\":\"星座指数\",\"sub_button\":[{\"type\":\"click\",\"name\":\"今日幸运色\",\"key\":\"TODAY_LUCKY_COLOR\"},{\"type\":\"click\",\"name\":\"今日开运物品\",\"key\":\"TODAY_LUCKY_GOODS\"},{\"type\":\"click\",\"name\":\"今日契合星座\",\"key\":\"TODAY_LUCKY_ASTRO\"},{\"type\":\"click\",\"name\":\"今日幸运数字\",\"key\":\"TODAY_LUCKY_NUMBER\"},{\"type\":\"click\",\"name\":\"今日星相\",\"key\":\"TODAY_LUCKY_STARS\"}]},{\"name\":\"我\",\"sub_button\":[{\"type\":\"click\",\"name\":\"我的星座\",\"key\":\"ME_HOROSCOPE_DETAIL\"},{\"type\":\"view\",\"name\":\"我的开运\",\"url\":\"http://wd.koudai.com/vshop/1/H5/index.html?userid=80852\"},{\"type\":\"click\",\"name\":\"星座查询\",\"key\":\"PLUGIN_HOROSCOPE_DETAIL\"}]}]}" ;
+
+
+
+
+
+
+
