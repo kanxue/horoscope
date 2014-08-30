@@ -32,6 +32,15 @@ private:
         const int astro,
         horoscope::routine::HoroscopeRoutineItem* routine);
 
+    bool ParseFortuneContent(
+        const std::string& content,
+        std::string& color,
+        int& number,
+        std::string& astro,
+        std::string& goods,
+        std::string& star,
+        std::string& fortune);
+
     std::string GetNameByAstro(const int astro);
 
 private:

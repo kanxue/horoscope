@@ -63,6 +63,13 @@ std::string GetUtf8String(const std::string& gbk_str)
     return out;
 }
 
+std::string GetGbkString(const std::string& utf8_str)
+{
+    std::string out;
+    if (!ConvertUtf8ToGbk(utf8_str, &out)) out.assign(utf8_str);
+
+    return out;
+}
 
 
 
@@ -116,7 +123,7 @@ bool containsSeperateMonthDay(const std::string& input,
     }
     else
     {
-        LOG(ERROR) << "INPUT match error. " << input;
+        LOG(WARNING) << "INPUT Regex match error. " << input;
         return false;
     }
 }

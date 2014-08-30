@@ -3,8 +3,10 @@
 
 #include "common/base/string/concat.h"
 #include "common/base/string/format.h"
+#include "common/base/string/string_number.h"
 #include "common/net/http/http_request.h"
 #include "common/net/http/http_response.h"
+#include "common/base/string/algorithm.h"
 
 #include "thirdparty/glog/logging.h"
 
@@ -55,6 +57,7 @@ void HoroscopeRoutineLogic::Run()
             << "to xml failed. error [" << error
             << "] message [" << routine_list.ShortDebugString() << "]";
     }
+    *m_response->mutable_http_body() = GetUtf8String(*m_response->mutable_http_body());
 }
 
 bool HoroscopeRoutineLogic::CheckRequest()
@@ -89,7 +92,7 @@ void HoroscopeRoutineLogic::DoGetHoroscopeRoutine(
     std::string cache_name = HoroscopeRoutineHandler::CacheName();
     std::string cache_key = StringFormat("astro_%d", astro);
 
-    // get from cache
+    //get from cache
     if (cache.Get(cache_name, cache_key, routine)) {
         return;
     }
@@ -117,26 +120,86 @@ int HoroscopeRoutineLogic::DoGetHoroscopeRoutineFromDB(
     routine->set_name(GetNameByAstro(astro));
 
     // get today forture
-    std::string content;
-    int ret = client.GetTodayForture(astro, &content);
+    std::string utf8_content;
+    int ret = client.GetTodayForture(astro, &utf8_content);
     if (ret != 0) {
         LOG(ERROR)
             << "call GetTodayForture failed. astro " << astro
             << " ret " << ret;
         return ret;
     }
+    std::string content = GetGbkString(utf8_content);
 
-    // TODO(kanxue) parse xml.
+    std::string str_color = "color";
+    int n_number = 9999;
+    std::string str_astro = "astro";
+    std::string str_goods = "goods";
+    std::string str_todaystar = "star";    
+    std::string str_fortune = "today_forture, very long text.";
 
-    // set result.
-    routine->set_lucky_color("lucky_color");
-    routine->set_lucky_number(100 + astro);
-    routine->set_lucky_astro("lucky_astro");
-    routine->set_lucky_object("lucky_object");
-    routine->set_today_index(10 + astro);
-    routine->set_today_forture("today_forture, very long text.");
+    if(!ParseFortuneContent(content, str_color, n_number, str_astro, str_goods, str_todaystar, str_fortune))
+    {   
+        LOG(ERROR)<< "ParseFortuneContent error" << astro << " content : " << content;
+    }
+
+    routine->set_lucky_color(str_color);
+    routine->set_lucky_number(n_number);
+    routine->set_lucky_astro(str_astro);
+    routine->set_lucky_goods(str_goods);
+    routine->set_today_star(str_todaystar);
+    routine->set_today_fortune(str_fortune);
 
     return 0;
+}
+
+bool HoroscopeRoutineLogic::ParseFortuneContent(
+        const std::string& content,
+        std::string& color,
+        int& number,
+        std::string& astro,
+        std::string& goods,
+        std::string& star,
+        std::string& fortune)
+{
+    std::vector<std::string> str_vector;
+    const char* delim = "\r\n";
+    SplitStringByAnyOf(content, delim, &str_vector);
+    
+    std::vector<std::string>::iterator it;
+    for(it = str_vector.begin(); it != str_vector.end(); it++)
+    {
+        std::string str = *it;
+
+        if(str.find("幸运颜色") == 0)
+        {
+            color.assign(StringTrim(str.substr(str.find(':') + 1)));
+        }
+        else if(str.find("幸运数字") == 0)
+        {
+            ParseNumber(str.substr(str.find(':')).c_str() + 1, &number);
+        }
+        else if(str.find("契合星座") == 0)
+        {
+            astro.assign(StringTrim(str.substr(str.find(':') + 1)));
+        }
+        else if(str.find("幸运物品") == 0)
+        {
+            goods.assign(StringTrim(str.substr(str.find(':')+ 1)));
+        }
+        else if(str.find("今日星相") == 0)
+        {
+            star.assign(StringTrim(str.substr(14)));
+        }
+        else if(str.find("今日运势") == 0)
+        {
+
+        }
+        else
+        {
+            fortune.assign(str);
+        }
+    }
+   return true;
 }
 
 std::string HoroscopeRoutineLogic::GetNameByAstro(const int astro)

@@ -34,6 +34,7 @@ cc_library(
         ':redis_client',
         ':storage_proto',
 
+        '//common/collection:memory_cache',
         '//common/encoding:encoding',
         '//common/text/regex:regex',
         '//common/system/concurrency:concurrency',
@@ -56,3 +57,8 @@ cc_test(
     deps = ':storage'
 )
 
+cc_binary(
+    name = 'datetime_test',
+    srcs = 'datetime_test.cpp',
+    deps = '//common/system/time:time'
+)

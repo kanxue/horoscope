@@ -12,14 +12,18 @@ DEFINE_string(storage_mysql_host, "114.113.155.201", "mysql host");
 DEFINE_int32(storage_mysql_port, 3306, "mysql port");
 DEFINE_string(storage_mysql_user, "public", "mysql user");
 DEFINE_string(storage_mysql_pass, "forconnect", "mysql pass");
-DEFINE_int32(storage_mysql_timezone, 8, "time zone");
+DEFINE_int32(storage_mysql_timezone, 0, "time zone");
+DEFINE_bool(storage_mysql_use_cache, true, "use cache or not");
+DEFINE_int32(storage_mysql_cache_capacity, 100, "cache capacity");
+DEFINE_int32(storage_mysql_cache_expired, 60, "cache expired seconds");
 
 StorageMysqlClientOptions& StorageMysqlClientOptions::GetDefaultOptions()
 {
     static StorageMysqlClientOptions obj(
         FLAGS_storage_mysql_name, FLAGS_storage_mysql_host,
         FLAGS_storage_mysql_port, FLAGS_storage_mysql_user,
-        FLAGS_storage_mysql_pass);
+        FLAGS_storage_mysql_pass, FLAGS_storage_mysql_use_cache,
+        FLAGS_storage_mysql_cache_capacity, FLAGS_storage_mysql_cache_expired);
     return obj;
 }
 
@@ -43,6 +47,10 @@ int StorageMysqlClient::Connect(const StorageMysqlClientOptions& options)
 
     m_options = options;
 
+    if (m_options.m_use_cache) {
+        m_cache.reset(new MyMemoryCache(m_options.m_cache_capacity));
+    }
+
     return ConnectWithLock();
 }
 
@@ -53,6 +61,14 @@ int StorageMysqlClient::GetForture(
     const std::string& day,
     std::string* content)
 {
+    // get from cache firstly.
+    std::string key;
+    MakeFortureKey(type, astro, day, &key);
+    int ret = GetFromCache(key, content);
+    if (ret == 0) {
+        return 0;
+    }
+
     ScopedLocker<Mutex> locker(&m_mutex);
     ConnectWithLock();
 
@@ -68,6 +84,10 @@ int StorageMysqlClient::GetForture(
         result[0]["content"].to_string(*content);
     }
     *content = ReplaceAll(*content, "\r\n", "\n");
+
+    // save to cache.
+    SetToCache(key, *content);
+
     return (content->empty()) ? 1 : 0;
 }
 
@@ -76,7 +96,7 @@ int StorageMysqlClient::GetTodayForture(
     std::string* content)
 {
     TimeSpan span(0, FLAGS_storage_mysql_timezone, 0, 0);
-    DateTime now = DateTime::Now() - span;
+    DateTime now = DateTime::UTCNow() - span;
     std::string day = now.ToString("yyyy-MM-dd 00:00:00");
 
     int type = 0;
@@ -87,8 +107,8 @@ int StorageMysqlClient::GetTomorrowForture(
     const int astro,
     std::string* content)
 {
-    TimeSpan span(1, FLAGS_storage_mysql_timezone, 0, 0);
-    DateTime now = DateTime::Now() + span;
+    TimeSpan span(1, 0, 0, 0);
+    DateTime now = DateTime::Now() + span - TimeSpan(0, FLAGS_storage_mysql_timezone, 0, 0);
     std::string day = now.ToString("yyyy-MM-dd 00:00:00");
 
     int type = 0;
@@ -99,10 +119,18 @@ int StorageMysqlClient::GetTswkForture(
     const int astro,
     std::string* content)
 {
+    int type = 1;
+    // get from cache firstly.
+    std::string key;
+    MakeTswkFortureKey(type, astro, &key);
+    int ret = GetFromCache(key, content);
+    if (ret == 0) {
+        return 0;
+    }
+
     ScopedLocker<Mutex> locker(&m_mutex);
     ConnectWithLock();
 
-    int type = 1;
     std::string sql = StringFormat(
         "select content from fortune where type=%d and astro=%d "
         "order by day desc limit 1;", type, astro);
@@ -115,6 +143,9 @@ int StorageMysqlClient::GetTswkForture(
     }
 	
     *content = ReplaceAll(*content, "\r\n", "\n");
+
+    // save to cache.
+    SetToCache(key, *content);
 
     return (content->empty()) ? 1 : 0;
 }
@@ -168,9 +199,61 @@ int StorageMysqlClient::ConnectWithLock()
             return -1;
         }
 
+        if (!m_query->exec("set names utf8;")) {
+            LOG(ERROR) << "set names utf8 failed.";
+        }
+
         m_has_connected = true;
     }
 
     return 0;
 }
 
+int StorageMysqlClient::GetFromCache(
+    const std::string& key,
+    std::string* value)
+{
+    if (!m_options.m_use_cache) {
+        return 1;
+    }
+
+    if (m_cache->Get(key, value)) {
+        LOG(INFO)
+            << __func__ << " hit cache. key [" << key
+            << "] value_size " << value->size();
+        return 0;
+    } else {
+        LOG(INFO)
+            << __func__ << " miss cache. key [" << key
+            << "] cache_size " << m_cache->Size();
+        return 1;
+    }
+}
+
+int StorageMysqlClient::SetToCache(
+    const std::string& key,
+    const std::string& value)
+{
+    if (m_options.m_use_cache) {
+        m_cache->PutWithExpiry(key, value, m_options.m_cache_expired * 1000);
+    }
+
+    return 0;
+}
+
+void StorageMysqlClient::MakeFortureKey(
+    const int type,
+    const int astro,
+    const std::string& day,
+    std::string* key)
+{
+    StringFormatTo(key, "day_%d_%d_%s", type, astro, day.c_str());
+}
+
+void StorageMysqlClient::MakeTswkFortureKey(
+    const int type,
+    const int astro,
+    std::string* key)
+{
+    StringFormatTo(key, "tswk_%d_%d", type, astro);
+}

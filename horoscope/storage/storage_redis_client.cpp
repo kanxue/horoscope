@@ -262,6 +262,8 @@ int StorageRedisClient::GetAllHoroscopeAttr(std::string* content)
 void StorageRedisClient::ResetRedisClient()
 {
     if (!m_redis_client) {
+        LOG(INFO) << "ip " << FLAGS_storage_redis_ip;
+        
         m_redis_client.reset(
             new RedisClient(
                 FLAGS_storage_redis_ip,
@@ -352,6 +354,10 @@ int StorageRedisClient::SetPbToRedis(
             << "] ret " << ret;
         return ret;
     }
+
+    if (*value.rbegin() == '\n') value.resize(value.size() - 1);
+    LOG(INFO)
+        << "set '" << key << "' '" << value << "'";
 
     return 0;
 }

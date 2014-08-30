@@ -8,10 +8,9 @@ message HoroscopeRoutineItem {
     optional string lucky_color = 10;
     optional int32 lucky_number = 11;
     optional string lucky_astro = 12;
-    optional string lucky_object = 13;
-
-    optional int32 today_index = 20;
-    optional string today_forture = 21;
+    optional string lucky_goods = 13;
+    optional string today_star = 14;
+    optional string today_fortune = 21;
 }
 
 message HoroscopeRoutineList {

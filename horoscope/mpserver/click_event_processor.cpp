@@ -172,7 +172,7 @@ void ClickEventProcessor::Process(mpserver::NewsMessage* output_message)
     output_message->set_msgtype("news");
 
     std::string str_articles;
-    StorageMysqlClient mysql_client;
+    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
     int ret = mysql_client.GetMostRecentArticles(&str_articles);
     if(ret == 0)
     {    
@@ -202,7 +202,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
 
     std::string resp_content;
     StorageRedisClient redis_client;
-    StorageMysqlClient mysql_client;
+    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
 
     bool has_horoscope = false;
     std::string head = GetUtf8String("");

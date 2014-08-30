@@ -7,6 +7,7 @@
 #include "common/base/scoped_ptr.h"
 #include "common/base/singleton.h"
 #include "common/base/string/concat.h"
+#include "common/collection/memory_cache.h"
 #include "common/system/concurrency/atomic/atomic.h"
 #include "common/system/concurrency/mutex.h"
 #include "thirdparty/mysql++/mysql++.h"
@@ -17,6 +18,9 @@ struct StorageMysqlClientOptions {
     int16_t     m_port;
     std::string m_user;
     std::string m_pass;
+    bool        m_use_cache;
+    uint32_t    m_cache_capacity;
+    uint32_t    m_cache_expired;
 
     StorageMysqlClientOptions() {}
 
@@ -25,12 +29,18 @@ struct StorageMysqlClientOptions {
         const std::string& host,
         const int16_t port,
         const std::string& user,
-        const std::string& pass)
+        const std::string& pass,
+        const bool use_cache,
+        const uint32_t cache_capacity,
+        const uint32_t cache_expired)
     : m_db_name(db_name),
         m_host(host),
         m_port(port),
         m_user(user),
-        m_pass(pass) {}
+        m_pass(pass),
+        m_use_cache(use_cache),
+        m_cache_capacity(cache_capacity),
+        m_cache_expired(cache_expired) {}
 
     std::string ToString() const {
         return StringConcat(
@@ -81,11 +91,30 @@ private:
     int ConnectWithLock();
 
 private:
+    int GetFromCache(const std::string& key, std::string* value);
+
+    int SetToCache(const std::string& key, const std::string& value);
+
+    void MakeFortureKey(
+        const int type,
+        const int astro,
+        const std::string& day,
+        std::string* key);
+
+    void MakeTswkFortureKey(
+        const int type,
+        const int astro,
+        std::string* key);
+
+private:
+    typedef MemoryCache<std::string, std::string> MyMemoryCache;
+
     StorageMysqlClientOptions         m_options;
     Atomic<bool>                      m_has_connected;
     Mutex                             m_mutex;
     scoped_ptr<mysqlpp::Connection>   m_connection;
     scoped_ptr<mysqlpp::Query>        m_query;
+    scoped_ptr<MyMemoryCache>         m_cache;
 }; // class StorageMysqlClient
 
 typedef Singleton<StorageMysqlClient> StorageMysqlClientSingleton;
