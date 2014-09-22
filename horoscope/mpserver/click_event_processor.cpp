@@ -120,14 +120,14 @@ void ClickEventProcessor::Run()
     }
 
     // record click action.
-    StorageRedisClient storage_client;
-    horoscope::UserMessages::Item item;
-    item.set_stamp(static_cast<uint32_t>(time(NULL)));
-    item.set_result_flag(0);
-    storage_client.AddUserMessages(m_input_event.fromusername(), item);
+    // StorageRedisClient storage_client;
+    // horoscope::UserMessages::Item item;
+    // item.set_stamp(static_cast<uint32_t>(time(NULL)));
+    // item.set_result_flag(0);
+    // storage_client.AddUserMessages(m_input_event.fromusername(), item);
 
     const std::string& event_key = m_input_event.eventkey();
-    item.set_content(event_key);
+    //item.set_content(event_key);
 
     if(event_key == "ARTICLES_MOST_RECENT"){
 	//can not be reached now, not show articles anymore
@@ -207,10 +207,11 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
     bool has_horoscope = false;
     std::string head = GetUtf8String("");
     horoscope::UserAttr userattr;
-    int ret = redis_client.GetUserAttr(openid, &userattr);
+    int ret = mysql_client.GetUserAttr(openid, &userattr);
+    //LOG(INFO) << "call GetUserAttr done. openid " << openid << " ret " << ret;
     if (ret == 0) {
         horoscope::HoroscopeAttr horoscope_attr;
-        ret = redis_client.GetHoroscopeAttr(
+        ret = mysql_client.GetHoroscopeAttr(
             userattr.horoscope_type(), &horoscope_attr);
         if (ret == 0) {
             has_horoscope = true;

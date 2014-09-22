@@ -93,9 +93,9 @@ void HoroscopeRoutineLogic::DoGetHoroscopeRoutine(
     std::string cache_key = StringFormat("astro_%d", astro);
 
     //get from cache
-    if (cache.Get(cache_name, cache_key, routine)) {
-        return;
-    }
+ //   if (cache.Get(cache_name, cache_key, routine)) {
+ //       return;
+ //   }
 
     // get from db
     int ret = DoGetHoroscopeRoutineFromDB(astro, routine);
@@ -130,24 +130,30 @@ int HoroscopeRoutineLogic::DoGetHoroscopeRoutineFromDB(
     }
     std::string content = GetGbkString(utf8_content);
 
-    std::string str_color = "color";
-    int n_number = 9999;
-    std::string str_astro = "astro";
-    std::string str_goods = "goods";
-    std::string str_todaystar = "star";    
-    std::string str_fortune = "today_forture, very long text.";
+    std::string str_color = "";
+    int n_number = -1;
+    std::string str_astro = "";
+    std::string str_goods = "";
+    std::string str_todaystar = "";    
+    std::string str_fortune = "";
 
     if(!ParseFortuneContent(content, str_color, n_number, str_astro, str_goods, str_todaystar, str_fortune))
     {   
         LOG(ERROR)<< "ParseFortuneContent error" << astro << " content : " << content;
     }
 
-    routine->set_lucky_color(str_color);
-    routine->set_lucky_number(n_number);
-    routine->set_lucky_astro(str_astro);
-    routine->set_lucky_goods(str_goods);
-    routine->set_today_star(str_todaystar);
-    routine->set_today_fortune(str_fortune);
+    if(!str_color.empty())
+        routine->set_lucky_color(str_color);
+    if(n_number >= 0)
+        routine->set_lucky_number(n_number);
+    if(!str_astro.empty())
+        routine->set_lucky_astro(str_astro);
+    if(!str_goods.empty())
+        routine->set_lucky_goods(str_goods);
+    if(!str_todaystar.empty())
+        routine->set_today_star(str_todaystar);
+    if(!str_fortune.empty())
+        routine->set_today_fortune(str_fortune);
 
     return 0;
 }
@@ -170,25 +176,42 @@ bool HoroscopeRoutineLogic::ParseFortuneContent(
     {
         std::string str = *it;
 
+        int index = str.find(':');
+        if(index > 0 && index < 20)
+        {
+            index++;
+        }
+        else
+        {
+            index = str.find("：");
+            if(index > 0 && index < 20)
+                index += 2;
+        }
+
         if(str.find("幸运颜色") == 0)
         {
-            color.assign(StringTrim(str.substr(str.find(':') + 1)));
+            if(index > 0 && index < (int)str.length())
+                color.assign(StringTrim(str.substr(index)));
         }
         else if(str.find("幸运数字") == 0)
         {
-            ParseNumber(str.substr(str.find(':')).c_str() + 1, &number);
+            if(index > 0 && index < (int)str.length())
+                ParseNumber(str.substr(index).c_str(), &number);
         }
         else if(str.find("契合星座") == 0)
         {
-            astro.assign(StringTrim(str.substr(str.find(':') + 1)));
+            if(index > 0 && index < (int)str.length())
+                astro.assign(StringTrim(str.substr(index)));
         }
         else if(str.find("幸运物品") == 0)
         {
-            goods.assign(StringTrim(str.substr(str.find(':')+ 1)));
+            if(index > 0 && index < (int)str.length())
+                goods.assign(StringTrim(str.substr(index)));
         }
         else if(str.find("今日星相") == 0)
         {
-            star.assign(StringTrim(str.substr(14)));
+            if(index > 0 && index < (int)str.length())
+                star.assign(StringTrim(str.substr(index)));
         }
         else if(str.find("今日运势") == 0)
         {

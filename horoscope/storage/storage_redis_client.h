@@ -77,7 +77,7 @@ public:
 public:
     int GetAllHoroscopeAttr(std::string* content);
 
-private:
+public:
     void ResetRedisClient();
 
     void MakeUserAttrKey(const std::string& openid, std::string* key);

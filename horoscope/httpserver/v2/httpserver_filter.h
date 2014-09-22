@@ -24,6 +24,8 @@ public:
 
 private:
     void Load(const std::string& config_file, uint32_t modify_time);
+	
+	void GetIpSegement(const std::string& ip, std::string& ip_seg);
 
 private:
     typedef std::set<std::string> WhiteIpSet;

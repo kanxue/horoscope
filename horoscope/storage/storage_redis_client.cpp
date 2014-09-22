@@ -348,6 +348,8 @@ int StorageRedisClient::SetPbToRedis(
     }
 
     int ret = m_redis_client->Set(key, value);
+    LOG(INFO)
+        << "set '" << key << "' '" << value << "'";
     if (ret != 0) {
         LOG(ERROR)
             << __func__ << " set to redis fail. key [" << key

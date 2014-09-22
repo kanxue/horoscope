@@ -184,6 +184,121 @@ int StorageMysqlClient::GetMostRecentArticles(
     return (content->empty()) ? 1 : 0;
 }
 
+int StorageMysqlClient::GetUserAttr(
+    const std::string& openid,
+    horoscope::UserAttr* userattr)
+{
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    std::string sql = StringFormat(
+        "select birth_year, birth_month, birth_day, sex, "
+        "horoscope_type, rule_id from storage_user_attr "
+        "where openid='%s';", openid.c_str());
+    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    int num_rows = result.num_rows();
+    LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
+    if (num_rows > 0) {
+#define SET_INT_FROM_MYSQL(item) userattr->set_##item(result[0][#item]);
+#define SET_STR_FROM_MYSQL(item) result[0][#item].to_string(*userattr->mutable_##item());
+        SET_INT_FROM_MYSQL(birth_year);
+        SET_INT_FROM_MYSQL(birth_month);
+        SET_INT_FROM_MYSQL(birth_day);
+        SET_INT_FROM_MYSQL(sex);
+        SET_INT_FROM_MYSQL(horoscope_type);
+        SET_INT_FROM_MYSQL(rule_id);
+#undef SET_STR_FROM_MYSQL
+#undef SET_INT_FROM_MYSQL
+    }
+
+    return (num_rows > 0) ? 0 : 1;
+}
+
+int StorageMysqlClient::SetUserAttr(
+    const std::string& openid,
+    const horoscope::UserAttr& user_attr)
+{
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    std::string sql = StringFormat(
+        "replace into storage_user_attr(openid, birth_year, birth_month, "
+        "birth_day, sex, horoscope_type, rule_id) values('%s', %d, %d, "
+        " %d, %d, %d, %d);",
+        openid.c_str(), user_attr.birth_year(),
+        user_attr.birth_month(), user_attr.birth_day(), user_attr.sex(),
+        user_attr.horoscope_type(), user_attr.rule_id());
+    bool succ = m_query->exec(sql);
+    LOG(INFO) << "run [" << sql << "] succ " << succ;
+
+    return succ ? 0 : 1;
+}
+
+int StorageMysqlClient::DelUserAttr(const std::string& openid)
+{
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    std::string sql = StringFormat(
+        "delete from storage_user_attr where openid='%s';",
+        openid.c_str());
+    bool succ = m_query->exec(sql);
+    LOG(INFO) << "run [" << sql << "] succ " << succ;
+
+    return succ ? 0 : 1;
+}
+
+int StorageMysqlClient::GetHoroscopeAttr(
+    const int32_t horoscope_type,
+    horoscope::HoroscopeAttr* horoscope_attr)
+{
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    std::string sql = StringFormat(
+        "select start_month, start_day, end_month, end_day, en_name, "
+        "zh_cn_name, zh_tw_name from storage_horoscope_attr where type=%d;",
+        horoscope_type);
+    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    int num_rows = result.num_rows();
+    LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
+    if (num_rows > 0) {
+#define SET_INT_FROM_MYSQL(item) horoscope_attr->set_##item(result[0][#item]);
+#define SET_STR_FROM_MYSQL(item) result[0][#item].to_string(*horoscope_attr->mutable_##item());
+        SET_INT_FROM_MYSQL(start_month);
+        SET_INT_FROM_MYSQL(start_day);
+        SET_INT_FROM_MYSQL(end_month);
+        SET_INT_FROM_MYSQL(end_day);
+        SET_STR_FROM_MYSQL(en_name);
+        SET_STR_FROM_MYSQL(zh_cn_name);
+        SET_STR_FROM_MYSQL(zh_tw_name);
+#undef SET_STR_FROM_MYSQL
+#undef SET_INT_FROM_MYSQL
+    }
+
+    return (num_rows > 0) ? 0 : 1;
+}
+
+int StorageMysqlClient::SetHoroscopeAttr(
+    const int32_t horoscope_type,
+    const horoscope::HoroscopeAttr& horoscope_attr)
+{
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    std::string sql = StringFormat(
+        "replace into storage_horoscope_attr(type, start_month, start_day, "
+        "end_month, end_day, en_name, zh_cn_name, zh_tw_name) values("
+        "%d, %d, %d, %d, %d, '%s', '%s', '%s');", horoscope_type, horoscope_attr.start_month(),
+        horoscope_attr.start_day(), horoscope_attr.end_month(), horoscope_attr.end_day(),
+        horoscope_attr.en_name().c_str(), horoscope_attr.zh_cn_name().c_str(),
+        horoscope_attr.zh_tw_name().c_str());
+    bool succ = m_query->exec(sql);
+    LOG(INFO) << "run [" << sql << "] succ " << succ;
+
+    return succ ? 0 : 1;
+}
+
 int StorageMysqlClient::ConnectWithLock()
 {
     m_has_connected = (m_connection.get() && m_connection->connected());

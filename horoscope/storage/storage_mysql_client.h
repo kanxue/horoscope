@@ -12,6 +12,8 @@
 #include "common/system/concurrency/mutex.h"
 #include "thirdparty/mysql++/mysql++.h"
 
+#include "horoscope/storage/storage.pb.h"
+
 struct StorageMysqlClientOptions {
     std::string m_db_name;
     std::string m_host;
@@ -86,6 +88,26 @@ public:
 		
     int GetMostRecentArticles(
         std::string* content);
+
+public:
+    // 从redis中迁移的数据接口
+    int GetUserAttr(
+        const std::string& openid,
+        horoscope::UserAttr* userattr);
+
+    int SetUserAttr(
+        const std::string& openid,
+        const horoscope::UserAttr& user_attr);
+
+    int DelUserAttr(const std::string& openid);
+
+    int GetHoroscopeAttr(
+        const int32_t horoscope_type,
+        horoscope::HoroscopeAttr* horoscope_attr);
+
+    int SetHoroscopeAttr(
+        const int32_t horoscope_type,
+        const horoscope::HoroscopeAttr& horoscope_attr);
 
 private:
     int ConnectWithLock();

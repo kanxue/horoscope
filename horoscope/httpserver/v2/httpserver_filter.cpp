@@ -1,6 +1,8 @@
 
 #include "httpserver_filter.h"
 
+#include "common/base/string/algorithm.h"
+
 #include "common/base/scoped_ptr.h"
 #include "common/crypto/hash/crc.h"
 //#include "common/file/file.h"
@@ -55,8 +57,32 @@ void HttpServerFilter::LoadIfModify(const std::string& config_file)
 
 bool HttpServerFilter::CheckPass(const std::string& ip)
 {
+    //暂时关闭ip过滤
+    return true;
+
+	std::string ip_seg;
+	GetIpSegement(ip, ip_seg);
+	
     RWLock::ReaderLocker locker(&m_rw_lock);
-    return m_white_ip_set.find(ip) != m_white_ip_set.end();
+    return (m_white_ip_set.find(ip) != m_white_ip_set.end() || m_white_ip_set.find(ip_seg) != m_white_ip_set.end());
+}
+
+void HttpServerFilter::GetIpSegement(const std::string& ip, std::string& ip_seg)
+{
+	std::vector<std::string> str_vector;
+    const char* delim = ".";
+    SplitStringByAnyOf(ip, delim, &str_vector);
+	
+	if(str_vector.size() != 4)
+		return;
+		
+	for(int i = 0; i < 3; i++)
+    {
+		ip_seg.append(str_vector[i]);
+		ip_seg.append(".");
+	}
+	ip_seg.append("*");
+	LOG(INFO)<<"ip_seg: " << ip_seg;
 }
 
 void HttpServerFilter::Load(const std::string& config_file, uint32_t modify_time)

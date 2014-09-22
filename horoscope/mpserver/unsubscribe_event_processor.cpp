@@ -5,6 +5,7 @@
 #include "horoscope/mpserver/proto/pb_to_xml.h"
 #include "horoscope/mpserver/proto/xml_to_pb.h"
 #include "horoscope/storage/common_def.h"
+#include "horoscope/storage/storage_mysql_client.h"
 #include "horoscope/storage/storage_redis_client.h"
 
 UnSubscribeEventProcessor::UnSubscribeEventProcessor(
@@ -34,8 +35,9 @@ void UnSubscribeEventProcessor::Run()
     LOG(INFO) << "[UNSUBSCRIBE_EVENT] " << m_input_event.ShortDebugString();
 
     // delete user attr.
-    StorageRedisClient redis_client;
-    int ret = redis_client.DelUserAttr(m_input_event.fromusername());
+    //StorageRedisClient redis_client;
+    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    int ret = mysql_client.DelUserAttr(m_input_event.fromusername());
     LOG(INFO)
         << "delete user attr done. user " << m_input_event.fromusername()
         << " ret " << ret;

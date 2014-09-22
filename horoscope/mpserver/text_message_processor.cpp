@@ -35,12 +35,12 @@ void TextMessageProcessor::Run()
     }
 
     // record upstream message.
-    StorageRedisClient storage_client;
-    horoscope::UserMessages::Item item;
-    item.set_stamp(static_cast<uint32_t>(time(NULL)));
-    item.set_content(m_input_message.content());
-    item.set_result_flag(0);
-    storage_client.AddUserMessages(m_input_message.fromusername(), item);
+    // StorageRedisClient storage_client;
+    // horoscope::UserMessages::Item item;
+    // item.set_stamp(static_cast<uint32_t>(time(NULL)));
+    // item.set_content(m_input_message.content());
+    // item.set_result_flag(0);
+    // storage_client.AddUserMessages(m_input_message.fromusername(), item);
 
     mpserver::TextMessage output_message;
     Process(&output_message);
@@ -59,19 +59,22 @@ void TextMessageProcessor::Run()
 bool getMysqlFortuneContent(int horoscope_type, int date_type, std::string& content)
 {
     horoscope::HoroscopeAttr horoscope_attr;
-    StorageRedisClient redis_client;
+    //StorageRedisClient redis_client;
+    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
     int astro = Horoscope2Astro(horoscope_type);
 
-    int ret = redis_client.GetHoroscopeAttr(horoscope_type, &horoscope_attr);
+    int ret = mysql_client.GetHoroscopeAttr(horoscope_type, &horoscope_attr);
     if (ret == 0) {
         content.append(horoscope_attr.zh_cn_name());
     }
     else
     {
+        LOG(ERROR)
+            << "call GetHoroscopeAttr failed. horoscope_type "
+            << horoscope_type << " ret " << ret;
         return false;
     }
 
-    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
     std::string mysql_content;
     switch (date_type) {
             case Today:
@@ -104,6 +107,9 @@ bool getMysqlFortuneContent(int horoscope_type, int date_type, std::string& cont
         content.append(mysql_content);
         return true;
     }
+    LOG(ERROR)
+        << __func__ << " failed. horoscope_type " << horoscope_type
+        << " date_type " << date_type << " ret " << ret;
     return false;
 
 }
@@ -120,7 +126,8 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
     output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
     output_message->set_msgtype("text");
 
-    StorageRedisClient redis_client;
+    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    //StorageRedisClient redis_client;
     std::string resp_content;
 
     int ret = 0;
@@ -134,7 +141,7 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
 
             std::string head = GetUtf8String("");
             horoscope::HoroscopeAttr horoscope_attr;
-            ret = redis_client.GetHoroscopeAttr(horoscope_type, &horoscope_attr);
+            ret = mysql_client.GetHoroscopeAttr(horoscope_type, &horoscope_attr);
             if (ret == 0) {
                 head.append(horoscope_attr.zh_cn_name());
             }
@@ -161,11 +168,21 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
 				userattr.set_birth_day(0);
 			}
 			
-            ret = redis_client.MergeUserAttr(
+            //ret = redis_client.MergeUserAttr(
+            //    m_input_message.fromusername(), userattr);
+            ret = mysql_client.SetUserAttr(
                 m_input_message.fromusername(), userattr);
             if (ret == 0) {
                 resp_content.append(GetUtf8String(BIND_SUCCESS_WORDING));
             }
+
+            // Ë«Ð´µ½mysql
+            // StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+            // int mysql_ret = mysql_client.SetUserAttr(
+            //     m_input_message.fromusername(), userattr);
+            // LOG(INFO)
+            //     << "call StorageMysqlClient.SetUserAttr done. openid "
+            //     << openid << " ret " << mysql_ret;
 
         } else {
             std::string mysql_content;
@@ -183,7 +200,8 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
         int uer_horoscope_type = HoroscopeType_UnknownHoroscope;
 
         horoscope::UserAttr userattr;
-        ret = redis_client.GetUserAttr(
+        //ret = redis_client.GetUserAttr(
+        ret = mysql_client.GetUserAttr(
         m_input_message.fromusername(), &userattr);
         if (ret == 0) {
             uer_horoscope_type = userattr.horoscope_type();
@@ -201,13 +219,13 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
                 else
                 {
                     resp_content = GetUtf8String(INPUT_UNKNOWN);
-                    LOG(ERROR) << "user input unknown. " << content;
+                    LOG(ERROR) << "user input unknown. [" << content << "]";
                 }
             }
             else
             {
                 resp_content = GetUtf8String(INPUT_UNKNOWN);
-                LOG(ERROR) << "user input unknown. " << content;
+                LOG(ERROR) << "user input unknown. [" << content << "]";
             }
 
         }
