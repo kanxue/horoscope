@@ -253,7 +253,7 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
     } else if (event_key == "FORTUNE_HOROSCOPE_OTHERS") {
         resp_content = GetUtf8String(INPUT_OTHER_HOROSCOPE_WORDING);
     } else if (event_key == "PLUGIN_HOROSCOPE_DETAIL") {
-        ret = redis_client.GetAllHoroscopeAttr(&resp_content);
+        ret = mysql_client.GetAllHoroscopeAttr(&resp_content);
     } else if (event_key == "ME_HOROSCOPE_DETAIL") {
         if (has_horoscope) {
             if(userattr.birth_month() != 0 && userattr.birth_day() != 0){

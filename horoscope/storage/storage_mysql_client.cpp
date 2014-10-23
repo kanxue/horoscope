@@ -7,6 +7,8 @@
 #include "thirdparty/gflags/gflags.h"
 #include "thirdparty/glog/logging.h"
 
+#include "horoscope/storage/common_def.h"
+
 DEFINE_string(storage_mysql_name, "eyrie_farm", "db name");
 DEFINE_string(storage_mysql_host, "114.113.155.201", "mysql host");
 DEFINE_int32(storage_mysql_port, 3306, "mysql port");
@@ -297,6 +299,32 @@ int StorageMysqlClient::SetHoroscopeAttr(
     LOG(INFO) << "run [" << sql << "] succ " << succ;
 
     return succ ? 0 : 1;
+}
+
+int StorageMysqlClient::GetAllHoroscopeAttr(std::string* content)
+{
+    int ret = 0;
+    
+    horoscope::HoroscopeAttr horoscope_attr;
+
+    content->clear();
+    for (int type = 0; type < HoroscopeType_UnknownHoroscope; ++type) {
+        ret = GetHoroscopeAttr(type, &horoscope_attr);
+        if (ret == 0) {
+            content->append(horoscope_attr.zh_cn_name());
+            content->append(" : ");
+            std::string start_end;
+            StringFormatTo(
+                &start_end, "%d月%d日 - %d月%d日\n",
+                horoscope_attr.start_month(), horoscope_attr.start_day(),
+                horoscope_attr.end_month(), horoscope_attr.end_day());
+            content->append(GetUtf8String(start_end));
+        }
+    } ///< for
+
+    StringTrim(content);
+
+    return 0;
 }
 
 int StorageMysqlClient::ConnectWithLock()

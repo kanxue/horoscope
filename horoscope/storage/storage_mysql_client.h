@@ -109,6 +109,8 @@ public:
         const int32_t horoscope_type,
         const horoscope::HoroscopeAttr& horoscope_attr);
 
+    int GetAllHoroscopeAttr(std::string* content);
+
 private:
     int ConnectWithLock();
 
