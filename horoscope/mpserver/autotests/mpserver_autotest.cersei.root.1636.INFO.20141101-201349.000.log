@@ -1,0 +1,26 @@
+Log file created at: 2014/11/01 20:13:49
+Running on machine: cersei
+Log file name pattern: <programname>.<hostname>.<username>.<pid:xxx>.<severity>.<time>.<nums_file>.log
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I1101 20:13:49.919961  1636 common/base/module/module.cpp:191] Program initializing ...
+I1101 20:13:49.920341  1636 common/base/module/module.cpp:192] CommandLine: /home/code/build64_release/horoscope/mpserver/autotests/mpserver_autotest --mp_address=114.113.155.201:23456
+I1101 20:13:49.920354  1636 common/base/module/module.cpp:195] BuildTime: Sat Nov  1 20:13:09 2014
+I1101 20:13:49.920362  1636 common/base/module/module.cpp:196] BuildType: release
+I1101 20:13:49.920369  1636 common/base/module/module.cpp:197] BuilderName: root
+I1101 20:13:49.920377  1636 common/base/module/module.cpp:198] HostName: cersei
+I1101 20:13:49.920383  1636 common/base/module/module.cpp:199] Compiler: GCC 4.5.3-r2
+I1101 20:13:49.920390  1636 common/base/module/module.cpp:200] Version:
+I1101 20:13:49.920397  1636 common/base/module/module.cpp:203] 0:
+Path: horoscope
+URL: https://github.com/kanxue/horoscope/trunk/horoscope
+Repository Root: https://github.com/kanxue/horoscope
+Repository UUID: 941a15d5-4a8f-34a0-fb38-ce57b7db7bff
+Revision: 33
+Node Kind: directory
+Schedule: normal
+Last Changed Author: kanxue
+Last Changed Rev: 33
+Last Changed Date: 2014-07-10 04:08:54 +0800 (Thu, 10 Jul 2014)
+
+I1101 20:13:49.920405  1636 common/base/module/module.cpp:212] Initializing all modules ...
+I1101 20:13:49.920423  1636 common/base/module/module.cpp:241] All modules are initialized successfully
