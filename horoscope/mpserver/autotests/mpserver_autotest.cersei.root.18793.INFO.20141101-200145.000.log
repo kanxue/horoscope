@@ -1,5 +1,0 @@
-Log file created at: 2014/11/01 20:01:45
-Running on machine: cersei
-Log file name pattern: <programname>.<hostname>.<username>.<pid:xxx>.<severity>.<time>.<nums_file>.log
-Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
-I1101 20:01:45.411985 18793 common/base/module/module.cpp:191] Program initializing ...
