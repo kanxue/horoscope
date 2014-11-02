@@ -13,7 +13,7 @@ public:
     virtual ~UserCountStat();
 
 public:
-    void AddUserCount();
+    void AddUserCount(const std::string& openid);
 
     uint32_t GetRecentUserCount(const uint32_t seconds);
 

@@ -1,6 +1,7 @@
 
 #include "user_count_stat.h"
 
+#include "common/base/string/algorithm.h"
 #include "common/base/string/format.h"
 #include "thirdparty/gflags/gflags.h"
 
@@ -17,9 +18,11 @@ UserCountStat::UserCountStat()
 UserCountStat::~UserCountStat()
 {}
 
-void UserCountStat::AddUserCount()
+void UserCountStat::AddUserCount(const std::string& openid)
 {
-    m_stats.Increase();
+    if (!StringStartsWith(openid, "TEST_OPENID_")) {
+        m_stats.Increase();
+    }
 }
 
 uint32_t UserCountStat::GetRecentUserCount(const uint32_t seconds)
@@ -31,7 +34,10 @@ std::string UserCountStat::GetAndReportUserCount(
     const std::string& openid, const uint32_t seconds)
 {
     uint32_t count = m_stats.GetRecentCount(seconds);
-    m_stats.Increase();
+
+    if (!StringStartsWith(openid, "TEST_OPENID_")) {
+        m_stats.Increase();
+    }
 
     if (!FLAGS_enable_user_count_stat
         && (m_whitelist.find(openid) == m_whitelist.end()))

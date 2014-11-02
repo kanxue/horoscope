@@ -13,8 +13,8 @@ cur=`date`
 
 if [ $ret -eq 0 ]
 then
-    echo "[$stamp] autotest success" >> $log_dir/run.log
+    echo "[$cur] autotest success" >> $log_dir/run.log
 else
-    echo "[$stamp] autotest failed. ret $ret" >> $log_dir/run.log
+    echo "[$cur] autotest failed. ret $ret" >> $log_dir/run.log
 fi
 
