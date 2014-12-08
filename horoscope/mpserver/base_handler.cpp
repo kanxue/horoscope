@@ -29,15 +29,15 @@ void BaseHandler::Handler(
     Closure<void>* done)
 {
     int64_t start = GetTimeStampInUs();
-
-    LOG(INFO)
-        << "request " << (void*)request
-        << " response " << (void*)response
-        << " done " << (void*)done;
-
     std::string uri = request->uri();
     std::string input = request->http_body();
     std::string output;
+
+    LOG(INFO)
+        << "uri [" << uri
+        << "] request " << (void*)request
+        << " response " << (void*)response
+        << " done " << (void*)done;
 
     // call virtual function.
     Process(uri, input, &output);

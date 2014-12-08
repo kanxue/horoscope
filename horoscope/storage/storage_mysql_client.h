@@ -137,7 +137,8 @@ private:
     Atomic<bool>                      m_has_connected;
     Mutex                             m_mutex;
     scoped_ptr<mysqlpp::Connection>   m_connection;
-    scoped_ptr<mysqlpp::Query>        m_query;
+    //scoped_ptr<mysqlpp::Query>        m_query;
+    //mysqlpp::Query*                   m_query;
     scoped_ptr<MyMemoryCache>         m_cache;
 }; // class StorageMysqlClient
 

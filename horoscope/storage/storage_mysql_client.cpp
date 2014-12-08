@@ -31,12 +31,14 @@ StorageMysqlClientOptions& StorageMysqlClientOptions::GetDefaultOptions()
 
 StorageMysqlClient::StorageMysqlClient()
 {
+    //m_query = NULL;
     Connect(StorageMysqlClientOptions::GetDefaultOptions());
 }
 
 StorageMysqlClient::StorageMysqlClient(
     const StorageMysqlClientOptions& options)
 {
+    //m_query = NULL;
     Connect(options);
 }
 
@@ -77,7 +79,9 @@ int StorageMysqlClient::GetForture(
     std::string sql = StringFormat(
         "select content from fortune where type=%d and "
         "astro=%d and day=\"%s\";", type, astro, day.c_str());
-    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::Query query = m_connection->query();
+    //mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::StoreQueryResult result = query.store(sql);
     int num_rows = result.num_rows();
     LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
     content->clear();
@@ -136,7 +140,9 @@ int StorageMysqlClient::GetTswkForture(
     std::string sql = StringFormat(
         "select content from fortune where type=%d and astro=%d "
         "order by day desc limit 1;", type, astro);
-    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
+    //mysqlpp::StoreQueryResult result = m_query->store(sql);
     int num_rows = result.num_rows();
     LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
     content->clear();
@@ -173,7 +179,9 @@ int StorageMysqlClient::GetMostRecentArticles(
     std::string sql = StringFormat(
         "select content from mp_articles where type=%d "
         "order by day desc limit 1;", type);
-    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    //mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
     int num_rows = result.num_rows();
     LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
     content->clear();
@@ -190,6 +198,7 @@ int StorageMysqlClient::GetUserAttr(
     const std::string& openid,
     horoscope::UserAttr* userattr)
 {
+    LOG(INFO) << "begin " << __func__;
     ScopedLocker<Mutex> locker(&m_mutex);
     ConnectWithLock();
 
@@ -197,7 +206,10 @@ int StorageMysqlClient::GetUserAttr(
         "select birth_year, birth_month, birth_day, sex, "
         "horoscope_type, rule_id from storage_user_attr "
         "where openid='%s';", openid.c_str());
-    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    LOG(INFO) << "ready run mysql [" << sql << "]";
+    //mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
     int num_rows = result.num_rows();
     LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
     if (num_rows > 0) {
@@ -224,14 +236,37 @@ int StorageMysqlClient::SetUserAttr(
     ConnectWithLock();
 
     std::string sql = StringFormat(
-        "replace into storage_user_attr(openid, birth_year, birth_month, "
-        "birth_day, sex, horoscope_type, rule_id) values('%s', %d, %d, "
-        " %d, %d, %d, %d);",
-        openid.c_str(), user_attr.birth_year(),
-        user_attr.birth_month(), user_attr.birth_day(), user_attr.sex(),
-        user_attr.horoscope_type(), user_attr.rule_id());
-    bool succ = m_query->exec(sql);
-    LOG(INFO) << "run [" << sql << "] succ " << succ;
+        "select openid from storage_user_attr where openid='%s';",
+        openid.c_str());
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
+    int num_rows = result.num_rows();
+    LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
+    bool succ = false;
+    if (num_rows <= 0) {
+        sql = StringFormat(
+            "insert into storage_user_attr(openid, birth_year, birth_month, "
+            "birth_day, sex, horoscope_type, rule_id) values('%s', %d, %d, "
+            " %d, %d, %d, %d);",
+            openid.c_str(), user_attr.birth_year(),
+            user_attr.birth_month(), user_attr.birth_day(), user_attr.sex(),
+            user_attr.horoscope_type(), user_attr.rule_id());
+        //bool succ = m_query->exec(sql);
+        query = m_connection->query();
+        succ = query.exec(sql);
+        LOG(INFO) << "run [" << sql << "] succ " << succ;
+    } else {
+        sql = StringFormat(
+            "update storage_user_attr set birth_year=%d, birth_month=%d, "
+            "birth_day=%d, sex=%d, horoscope_type=%d, rule_id=%d "
+            "where openid='%s';",
+            user_attr.birth_year(), user_attr.birth_month(),
+            user_attr.birth_day(), user_attr.sex(),
+            user_attr.horoscope_type(), user_attr.rule_id(), openid.c_str());
+        query = m_connection->query();
+        succ = query.exec(sql);
+        LOG(INFO) << "run [" << sql << "] succ " << succ;
+    }
 
     return succ ? 0 : 1;
 }
@@ -244,7 +279,9 @@ int StorageMysqlClient::DelUserAttr(const std::string& openid)
     std::string sql = StringFormat(
         "delete from storage_user_attr where openid='%s';",
         openid.c_str());
-    bool succ = m_query->exec(sql);
+    //bool succ = m_query->exec(sql);
+    mysqlpp::Query query = m_connection->query();
+    bool succ = query.exec(sql);
     LOG(INFO) << "run [" << sql << "] succ " << succ;
 
     return succ ? 0 : 1;
@@ -261,7 +298,9 @@ int StorageMysqlClient::GetHoroscopeAttr(
         "select start_month, start_day, end_month, end_day, en_name, "
         "zh_cn_name, zh_tw_name from storage_horoscope_attr where type=%d;",
         horoscope_type);
-    mysqlpp::StoreQueryResult result = m_query->store(sql);
+    //mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
     int num_rows = result.num_rows();
     LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
     if (num_rows > 0) {
@@ -295,7 +334,9 @@ int StorageMysqlClient::SetHoroscopeAttr(
         horoscope_attr.start_day(), horoscope_attr.end_month(), horoscope_attr.end_day(),
         horoscope_attr.en_name().c_str(), horoscope_attr.zh_cn_name().c_str(),
         horoscope_attr.zh_tw_name().c_str());
-    bool succ = m_query->exec(sql);
+    //bool succ = m_query->exec(sql);
+    mysqlpp::Query query = m_connection->query();
+    bool succ = query.exec(sql);
     LOG(INFO) << "run [" << sql << "] succ " << succ;
 
     return succ ? 0 : 1;
@@ -336,13 +377,19 @@ int StorageMysqlClient::ConnectWithLock()
             m_options.m_db_name.c_str(), m_options.m_host.c_str(),
             m_options.m_user.c_str(), m_options.m_pass.c_str(),
             m_options.m_port);
-        m_query.reset(new mysqlpp::Query(m_connection.get(), false));
+        //m_query->reset(new mysqlpp::Query(m_connection.get(), false));
         if (!done) {
             LOG(ERROR) << "try connect failed. " << m_options.ToString();
             return -1;
         }
 
-        if (!m_query->exec("set names utf8;")) {
+        LOG(INFO)
+            << "build connection done. connection " << (void*)m_connection.get()
+            << " " << m_options.ToString();
+        //m_query = &(m_connection->query());
+        mysqlpp::Query query = m_connection->query();
+        //if (!m_query->exec("set names utf8;")) {
+        if (!query.exec("set names utf8;")) {
             LOG(ERROR) << "set names utf8 failed.";
         }
 
