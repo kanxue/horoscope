@@ -46,6 +46,11 @@ enum enHoroscopeDate
     UnknownDate = 6,
 };
 
+enum ActionType {
+    kActionType_Click = 1,
+    kActionType_Message = 2,
+
+}; // enum ActionType
 #define NOT_IMPLEMENT_WORDING "开发中，敬请期待 :-)"
 
 //#define INPUT_BIRTHDAY_WITH_BIND_WORDING "请绑定你的出生日期，比如：绑定0622"

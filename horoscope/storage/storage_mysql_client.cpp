@@ -368,6 +368,46 @@ int StorageMysqlClient::GetAllHoroscopeAttr(std::string* content)
     return 0;
 }
 
+int StorageMysqlClient::AddUserClickAction(
+    const std::string& openid, const std::string& event_key)
+{
+    if (openid == "TEST_OPENID_FOR_AUTOTEST") return 0;
+
+    int action_type = kActionType_Click;
+    uint32_t create_time = static_cast<uint32_t>(time(NULL));
+    std::string sql = StringFormat(
+        "insert into storage_user_action_history("
+        "openid, type, content, create_time) values('%s', %d, '%s', %u);",
+        openid.c_str(), action_type, event_key.c_str(), create_time);
+    mysqlpp::Query query = m_connection->query();
+    bool succ = query.exec(sql);
+    LOG(INFO) << "run [" << sql << "] succ " << succ;
+
+    return succ ? 0 : -1;
+}
+
+int StorageMysqlClient::AddUserMessageAction(
+    const std::string& openid, const std::string& content)
+{
+    if (openid == "TEST_OPENID_FOR_AUTOTEST") return 0;
+
+    std::string cpy_content = content;
+    if (cpy_content.size() > 128u) {
+        cpy_content.resize(128u);
+    }
+    int action_type = kActionType_Message;
+    uint32_t create_time = static_cast<uint32_t>(time(NULL));
+    std::string sql = StringFormat(
+        "insert into storage_user_action_history("
+        "openid, type, content, create_time) values('%s', %d, '%s', %u);",
+        openid.c_str(), action_type, cpy_content.c_str(), create_time);
+    mysqlpp::Query query = m_connection->query();
+    bool succ = query.exec(sql);
+    LOG(INFO) << "run [" << sql << "] succ " << succ;
+
+    return succ ? 0 : -1;
+}
+
 int StorageMysqlClient::ConnectWithLock()
 {
     m_has_connected = (m_connection.get() && m_connection->connected());

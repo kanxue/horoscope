@@ -223,6 +223,8 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
     const std::string& event_key = m_input_event.eventkey();
     int astro = Horoscope2Astro(userattr.horoscope_type());
 
+    mysql_client.AddUserClickAction(openid, event_key);
+
     if (event_key == "FORTUNE_HOROSCOPE_TODAY") {
         if (has_horoscope) {
             head.append(GetUtf8String("今日运势："));

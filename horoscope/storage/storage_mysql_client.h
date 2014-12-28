@@ -111,6 +111,15 @@ public:
 
     int GetAllHoroscopeAttr(std::string* content);
 
+public:
+    int AddUserClickAction(
+        const std::string& openid,
+        const std::string& event_key);
+
+    int AddUserMessageAction(
+        const std::string& openid,
+        const std::string& content);
+
 private:
     int ConnectWithLock();
 

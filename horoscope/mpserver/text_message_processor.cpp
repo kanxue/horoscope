@@ -134,6 +134,7 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
     int horoscope_type = GetHoroscopeTypeByText(content);
     int date_type = GetDateByText(content);
     
+    mysql_client.AddUserMessageAction(openid, m_input_message.content());
 
     if (horoscope_type != HoroscopeType_UnknownHoroscope) {
         
