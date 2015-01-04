@@ -142,7 +142,6 @@ int StorageMysqlClient::GetTswkForture(
         "order by day desc limit 1;", type, astro);
     mysqlpp::Query query = m_connection->query();
     mysqlpp::StoreQueryResult result = query.store(sql);
-    //mysqlpp::StoreQueryResult result = m_query->store(sql);
     int num_rows = result.num_rows();
     LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
     content->clear();
@@ -158,6 +157,42 @@ int StorageMysqlClient::GetTswkForture(
     return (content->empty()) ? 1 : 0;
 }
 
+int StorageMysqlClient::GetYearForture(
+    const int astro,
+    std::string* content)
+{
+    int type = 9;
+    std::string key;
+    MakeYearFortureKey(type, astro, &key);
+    int ret = GetFromCache(key, content);
+    if (ret == 0) {
+        return 0;
+    }
+
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    std::string sql = StringFormat(
+        "select content from mp_articles where type=%d and astro=%d "
+        "order by day desc limit 1;", type, astro);
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
+    int num_rows = result.num_rows();
+    LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
+    content->clear();
+    if (num_rows > 0) {
+        result[0]["content"].to_string(*content);
+    }
+	
+    *content = ReplaceAll(*content, "\r\n", "\n");
+
+    // save to cache.
+    SetToCache(key, *content);
+
+    return (content->empty()) ? 1 : 0;
+    
+}
+
 int StorageMysqlClient::GetTodayFortuneReport(
     std::string* content)
 {
@@ -169,13 +204,13 @@ int StorageMysqlClient::GetTodayFortuneReport(
     return GetForture(type, 0, day, content);
 }	
 
-int StorageMysqlClient::GetMostRecentArticles(
+int StorageMysqlClient::GetDailyReport(
     std::string* content)
 {
     ScopedLocker<Mutex> locker(&m_mutex);
     ConnectWithLock();
 
-    int type = 0;
+    int type = dbDataType_DailyReport;
     std::string sql = StringFormat(
         "select content from mp_articles where type=%d "
         "order by day desc limit 1;", type);
@@ -375,10 +410,16 @@ int StorageMysqlClient::AddUserClickAction(
 
     int action_type = kActionType_Click;
     uint32_t create_time = static_cast<uint32_t>(time(NULL));
+
+    mysqlpp::SQLStream sql_stream(m_connection.get(), event_key.c_str());
+    std::string escape_string;
+    sql_stream.escape_string(&escape_string, event_key.data(), event_key.size());
+
     std::string sql = StringFormat(
         "insert into storage_user_action_history("
         "openid, type, content, create_time) values('%s', %d, '%s', %u);",
-        openid.c_str(), action_type, event_key.c_str(), create_time);
+        openid.c_str(), action_type, escape_string.c_str(), create_time);
+
     mysqlpp::Query query = m_connection->query();
     bool succ = query.exec(sql);
     LOG(INFO) << "run [" << sql << "] succ " << succ;
@@ -391,16 +432,20 @@ int StorageMysqlClient::AddUserMessageAction(
 {
     if (openid == "TEST_OPENID_FOR_AUTOTEST") return 0;
 
-    std::string cpy_content = content;
-    if (cpy_content.size() > 128u) {
-        cpy_content.resize(128u);
-    }
     int action_type = kActionType_Message;
     uint32_t create_time = static_cast<uint32_t>(time(NULL));
+
+    mysqlpp::SQLStream sql_stream(m_connection.get(), content.c_str());
+    std::string escape_string;
+    sql_stream.escape_string(&escape_string, content.data(), content.size());
+    if (escape_string.size() > 126u) {
+        escape_string.resize(126u);
+    }
+
     std::string sql = StringFormat(
         "insert into storage_user_action_history("
         "openid, type, content, create_time) values('%s', %d, '%s', %u);",
-        openid.c_str(), action_type, cpy_content.c_str(), create_time);
+        openid.c_str(), action_type, escape_string.c_str(), create_time);
     mysqlpp::Query query = m_connection->query();
     bool succ = query.exec(sql);
     LOG(INFO) << "run [" << sql << "] succ " << succ;
@@ -487,3 +532,12 @@ void StorageMysqlClient::MakeTswkFortureKey(
 {
     StringFormatTo(key, "tswk_%d_%d", type, astro);
 }
+
+void StorageMysqlClient::MakeYearFortureKey(
+    const int type,
+    const int astro,
+    std::string* key)
+{
+    StringFormatTo(key, "year_%d_%d", type, astro);
+}
+

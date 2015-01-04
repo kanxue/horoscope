@@ -36,7 +36,8 @@ void UnSubscribeEventProcessor::Run()
 
     // delete user attr.
     //StorageRedisClient redis_client;
-    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    //StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    StorageMysqlClient mysql_client;
     int ret = mysql_client.DelUserAttr(m_input_event.fromusername());
     LOG(INFO)
         << "delete user attr done. user " << m_input_event.fromusername()

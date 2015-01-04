@@ -19,7 +19,15 @@ public:
     virtual void Run();
 
 private:
-    void Process(mpserver::TextMessage* output_message);
+    void ProcessText(mpserver::TextMessage* output_message);
+
+    void ProcessYear(
+        mpserver::NewsMessage* output_message,
+        bool& use_error_message, mpserver::TextMessage* error_message);
+    
+    void ProcessDailyReport(
+        mpserver::NewsMessage* output_message,
+        bool& use_error_message,mpserver::TextMessage* error_message);
 
 private:
     mpserver::TextMessage m_input_message;

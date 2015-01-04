@@ -42,15 +42,39 @@ void TextMessageProcessor::Run()
     // item.set_result_flag(0);
     // storage_client.AddUserMessages(m_input_message.fromusername(), item);
 
-    mpserver::TextMessage output_message;
-    Process(&output_message);
+    std::string content;
+    if (!ConvertUtf8ToGbk(m_input_message.content(), &content))
+        content.assign(m_input_message.content());
+
+    int date_type = GetDateByText(content);
+    mpserver::NewsMessage news_message;
+    mpserver::TextMessage text_message;
+    bool use_text = true;
+    if (date_type == ThisYear) {
+        use_text = false;
+        ProcessYear(&news_message, use_text, &text_message);
+    }else if (content.find("日报") != std::string::npos) {
+        use_text = false;
+        ProcessDailyReport(&news_message, use_text, &text_message);
+    }else {
+        ProcessText(&text_message);
+    }
 
     // serialize output.
     m_output->clear();
-    if (!ProtoMessageToXmlWithRoot(output_message, m_output, &error)) {
+    bool succ = true;
+    if (use_text) {
+        succ = ProtoMessageToXmlWithRoot(text_message, m_output, &error);
+    } else {
+        succ = ProtoMessageToXmlWithRoot(news_message, m_output, &error);
+    }
+
+    if (!succ) {
         LOG(ERROR)
-            << "text message to xml failed. message ["
-            << output_message.ShortDebugString()
+            << "message to xml failed. text message ["
+            << text_message.ShortDebugString()
+            << "] news message ["
+            << news_message.ShortDebugString()
             << "] error [" << error << "]";
         return;
     }
@@ -60,7 +84,8 @@ bool getMysqlFortuneContent(int horoscope_type, int date_type, std::string& cont
 {
     horoscope::HoroscopeAttr horoscope_attr;
     //StorageRedisClient redis_client;
-    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    //StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    StorageMysqlClient mysql_client;
     int astro = Horoscope2Astro(horoscope_type);
 
     int ret = mysql_client.GetHoroscopeAttr(horoscope_type, &horoscope_attr);
@@ -77,29 +102,33 @@ bool getMysqlFortuneContent(int horoscope_type, int date_type, std::string& cont
 
     std::string mysql_content;
     switch (date_type) {
-            case Today:
-                content.append(GetUtf8String("今日运势\n\n"));
-                ret = mysql_client.GetTodayForture(astro, &mysql_content);
-                break;
+    case Today:
+        content.append(GetUtf8String("今日运势\n\n"));
+        ret = mysql_client.GetTodayForture(astro, &mysql_content);
+        break;
 
-            case Tomorrow:
-                content.append(GetUtf8String("明日运势\n\n"));
-                ret = mysql_client.GetTomorrowForture(astro, &mysql_content);
-                break;
+    case Tomorrow:
+        content.append(GetUtf8String("明日运势\n\n"));
+        ret = mysql_client.GetTomorrowForture(astro, &mysql_content);
+        break;
 
-            case ThisWeek:
-                content.append(GetUtf8String("本周运势\n\n"));
-                ret = mysql_client.GetTswkForture(astro, &mysql_content);
-                break;
+    case ThisWeek:
+        content.append(GetUtf8String("本周运势\n\n"));
+        ret = mysql_client.GetTswkForture(astro, &mysql_content);
+        break;
 
-            case ThisMonth:
-            case ThisYear:
-            case UnknownDate:
-            default:
-                // TODO(kanxue) use today first.
-                content.append(GetUtf8String("今日运势\n\n"));
-                ret = mysql_client.GetTodayForture(astro, &mysql_content);
-                break;
+    case ThisYear:
+        content.clear();
+        ret = mysql_client.GetYearForture(astro, &mysql_content);
+        break;
+
+    case ThisMonth:
+    case UnknownDate:
+    default:
+        // TODO(kanxue) use today first.
+        content.append(GetUtf8String("今日运势\n\n"));
+        ret = mysql_client.GetTodayForture(astro, &mysql_content);
+        break;
     }
 
     if (ret == 0) 
@@ -114,27 +143,129 @@ bool getMysqlFortuneContent(int horoscope_type, int date_type, std::string& cont
 
 }
 
-void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
+bool getNewyearDayContent(std::string& content)
 {
-    // swap src/dst.
+    // content.clear();
+    // ret = mysql_client.GetYearForture(astro, &mysql_content);
+    // if (ret == 0) 
+    // {
+    //     content.append(mysql_content);
+    //     return true;
+    // }
+    // LOG(ERROR)<< "getNewyearDayContent failed.";
+    return false; 
+}
+
+void TextMessageProcessor::ProcessDailyReport(
+    mpserver::NewsMessage* output_message,
+    bool& use_error_message,
+    mpserver::TextMessage* error_message)
+{
+    StorageMysqlClient mysql_client;
     const std::string& openid = m_input_message.fromusername();
+    mysql_client.AddUserMessageAction(openid, m_input_message.content());
     std::string content;
     if (!ConvertUtf8ToGbk(m_input_message.content(), &content))
         content.assign(m_input_message.content());
+    // swap src/dst.
+    output_message->set_tousername(openid);
+    output_message->set_fromusername(m_input_message.tousername());
+    output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    output_message->set_msgtype("news");
+
+    error_message->set_tousername(openid);
+    error_message->set_fromusername(m_input_message.tousername());
+    error_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    error_message->set_msgtype("text");
+
+    bool all_success = false;
+    std::string msyql_content, error_msg;
+    mpserver::Articles* articles = output_message->mutable_articles();
+    if (!mysql_client.GetDailyReport(&msyql_content)
+        && XmlToProtoMessage(msyql_content, articles, &error_msg)) {
+        all_success = true;
+        output_message->set_articlecount(articles->item_size());
+    }
+    if (!all_success) {
+        LOG(ERROR)
+            << " error_msg [" << error_msg
+            << "] msyql_content [" << msyql_content << "]";
+        use_error_message = true;
+        error_message->set_content(GetUtf8String(INPUT_HOROSCOPE_WITH_YEAR_WORDING));
+    }
+}
+
+void TextMessageProcessor::ProcessYear(
+    mpserver::NewsMessage* output_message,
+    bool& use_error_message,
+    mpserver::TextMessage* error_message)
+{
+    int ret = 0;
+    StorageMysqlClient mysql_client;
+    const std::string& openid = m_input_message.fromusername();
+    mysql_client.AddUserMessageAction(openid, m_input_message.content());
+    std::string content;
+    if (!ConvertUtf8ToGbk(m_input_message.content(), &content))
+        content.assign(m_input_message.content());
+    // swap src/dst.
+    output_message->set_tousername(openid);
+    output_message->set_fromusername(m_input_message.tousername());
+    output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    output_message->set_msgtype("news");
+
+    error_message->set_tousername(openid);
+    error_message->set_fromusername(m_input_message.tousername());
+    error_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    error_message->set_msgtype("text");
+
+    int horoscope_type = GetHoroscopeTypeByText(content);
+    if (horoscope_type == HoroscopeType_UnknownHoroscope) {
+        horoscope::UserAttr userattr;
+        ret = mysql_client.GetUserAttr(
+            m_input_message.fromusername(), &userattr);
+        if (ret == 0) {
+            horoscope_type = userattr.horoscope_type();
+        }
+    }
+
+    bool all_success = false;
+    std::string msyql_content, error_msg;
+    mpserver::Articles* articles = output_message->mutable_articles();
+    if ((horoscope_type != HoroscopeType_UnknownHoroscope)
+        && getMysqlFortuneContent(horoscope_type, ThisYear, msyql_content)
+        && XmlToProtoMessage(msyql_content, articles, &error_msg)) {
+        all_success = true;
+        output_message->set_articlecount(articles->item_size());
+    }
+    if (!all_success) {
+        LOG(ERROR)
+            << __func__ << " failed. horoscope_type " << horoscope_type
+            << " error_msg [" << error_msg
+            << "] msyql_content [" << msyql_content << "]";
+        use_error_message = true;
+        error_message->set_content(GetUtf8String(INPUT_HOROSCOPE_WITH_YEAR_WORDING));
+    }
+}
+
+void TextMessageProcessor::ProcessText(mpserver::TextMessage* output_message)
+{
+    StorageMysqlClient mysql_client;
+    const std::string& openid = m_input_message.fromusername();
+    mysql_client.AddUserMessageAction(openid, m_input_message.content());
+    std::string content;
+    if (!ConvertUtf8ToGbk(m_input_message.content(), &content))
+        content.assign(m_input_message.content());
+    // swap src/dst.
     output_message->set_tousername(openid);
     output_message->set_fromusername(m_input_message.tousername());
     output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
     output_message->set_msgtype("text");
 
-    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
-    //StorageRedisClient redis_client;
     std::string resp_content;
 
     int ret = 0;
     int horoscope_type = GetHoroscopeTypeByText(content);
     int date_type = GetDateByText(content);
-    
-    mysql_client.AddUserMessageAction(openid, m_input_message.content());
 
     if (horoscope_type != HoroscopeType_UnknownHoroscope) {
         
@@ -201,7 +332,6 @@ void TextMessageProcessor::Process(mpserver::TextMessage* output_message)
         int uer_horoscope_type = HoroscopeType_UnknownHoroscope;
 
         horoscope::UserAttr userattr;
-        //ret = redis_client.GetUserAttr(
         ret = mysql_client.GetUserAttr(
         m_input_message.fromusername(), &userattr);
         if (ret == 0) {

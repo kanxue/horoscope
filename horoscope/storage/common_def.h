@@ -51,6 +51,16 @@ enum ActionType {
     kActionType_Message = 2,
 
 }; // enum ActionType
+
+enum dbDataType {
+    dbDataType_Day = 0,
+    dbDataType_Week = 1,
+    dbDataType_Year = 9,
+    dbDataType_DayStat = 8,    //每日星座指数
+    dbDataType_DailyReport = 101,   //日报消息
+};
+
+#define SYSTEM_ERROR_WORDING "系统错误，请稍后重试 :-("
 #define NOT_IMPLEMENT_WORDING "开发中，敬请期待 :-)"
 
 //#define INPUT_BIRTHDAY_WITH_BIND_WORDING "请绑定你的出生日期，比如：绑定0622"
@@ -63,6 +73,7 @@ enum ActionType {
 #define INPUT_UNKNOWN "不理解输入的指令，可能星座输入不对，或者试试菜单功能吧"
 #define USER_COUNT_PREFIX "最近五分钟有"
 #define USER_COUNT_SUFFIX "人与你同时使用了小巫~"
+#define INPUT_HOROSCOPE_WITH_YEAR_WORDING "请输入你要查询的星座。比如天蝎年度 或者 天蝎2015"
 
 int Astro2Horoscope(int astro_type);
 int Horoscope2Astro(int horoscope_type);
@@ -70,11 +81,13 @@ int Horoscope2Astro(int horoscope_type);
 std::string GetUtf8String(const std::string& gbk_str);
 std::string GetGbkString(const std::string& utf8_str);
 
-int GetHoroscopeTypeByText(const std::string& origin);
+int GetHoroscopeTypeByText(const std::string& utf8_origin);
 
-int GetDateByText(const std::string& origin);
+int GetDateByText(const std::string& utf8_origin);
 
-bool GetMonthDay(const std::string& input, std::string& month, std::string& day);
+bool GetMonthDay(const std::string& gbk_input, std::string& month, std::string& day);
 
 #endif // MPSERVER_COMMON_DEF_H_
+
+
 

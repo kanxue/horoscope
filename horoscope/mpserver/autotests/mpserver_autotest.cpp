@@ -114,7 +114,33 @@ TEST_F(MpServerAutoTest, TextMessage_BindTest2)
     EXPECT_TRUE(response.find(some_expect) != std::string::npos) << response;
 }
 
-// 菜单1.1 今日运势
+// 菜单1.1 今年运势
+// 预期：返回今年运势
+TEST_F(MpServerAutoTest, ClickMessage_YearFortune)
+{
+    std::string request;
+    StringConcatTo(
+        &request,
+        "<xml><ToUserName><![CDATA[gh_67e2f63ff038]]></ToUserName>"
+        "<FromUserName><![CDATA[",
+        m_test_openid,
+        "]]></FromUserName>"
+        "<CreateTime>1414688873</CreateTime> <MsgType><![CDATA[event]]></MsgType>"
+        "<Event><![CDATA[CLICK]]></Event>"
+        "<EventKey><![CDATA[FORTUNE_HOROSCOPE_YEAR]]></EventKey></xml>");
+    std::string response;
+    EXPECT_TRUE(Post(request, &response)) << GetLastErrorMsg();
+    {
+        std::string some_expect("巫店天蝎座2015年度运势");
+        EXPECT_TRUE(response.find(some_expect) != std::string::npos) << response;
+    }
+    {
+        std::string some_expect("<MsgType><![CDATA[news]]></MsgType>");
+        EXPECT_TRUE(response.find(some_expect) != std::string::npos) << response;
+    }
+}
+
+// 菜单1.2 今日运势
 // 预期：返回今日运势
 TEST_F(MpServerAutoTest, ClickMessage_TodayFortune)
 {
@@ -134,7 +160,7 @@ TEST_F(MpServerAutoTest, ClickMessage_TodayFortune)
     EXPECT_TRUE(response.find(some_expect) != std::string::npos) << response;
 }
 
-// 菜单1.2 明日运势
+// 菜单1.3 明日运势
 // 预期：返回明日运势
 TEST_F(MpServerAutoTest, ClickMessage_TomorrowFortune)
 {
@@ -154,8 +180,8 @@ TEST_F(MpServerAutoTest, ClickMessage_TomorrowFortune)
     EXPECT_TRUE(response.find(some_expect) != std::string::npos) << response;
 }
 
-// 菜单1.3 本周运势
-// 预期：：返回本周运势
+// 菜单1.4 本周运势
+// 预期：返回本周运势
 TEST_F(MpServerAutoTest, ClickMessage_WeekFortune)
 {
     std::string request;
@@ -174,7 +200,7 @@ TEST_F(MpServerAutoTest, ClickMessage_WeekFortune)
     EXPECT_TRUE(response.find(some_expect) != std::string::npos) << response;
 }
 
-// 菜单1.4 其他运势
+// 菜单1.5 其他运势
 // 预期：返回提示语
 TEST_F(MpServerAutoTest, ClickMessage_OtherFortune)
 {

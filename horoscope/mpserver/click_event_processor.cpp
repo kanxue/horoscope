@@ -146,15 +146,26 @@ void ClickEventProcessor::Run()
     }
     else{
         // process
-        mpserver::TextMessage output_message;
-        Process(&output_message);
+        mpserver::TextMessage text_message;
+        mpserver::NewsMessage news_message;
+        bool use_news_message = false;
+        Process(&text_message, use_news_message, &news_message);
 
             // serialize output.
         m_output->clear();
-        if (!ProtoMessageToXmlWithRoot(output_message, m_output, &error)) {
+        bool succ = true;
+        if (use_news_message) {
+            succ = ProtoMessageToXmlWithRoot(news_message, m_output, &error);
+        } else {
+            succ = ProtoMessageToXmlWithRoot(text_message, m_output, &error);
+        }
+
+        if (!succ) {
             LOG(ERROR)
-                << "text message to xml failed. message ["
-                << output_message.ShortDebugString()
+                << "message to xml failed. text message ["
+                << text_message.ShortDebugString()
+                << "] news message ["
+                << news_message.ShortDebugString()
                 << "] error [" << error << "]";
             return;
         }
@@ -173,7 +184,7 @@ void ClickEventProcessor::Process(mpserver::NewsMessage* output_message)
 
     std::string str_articles;
     StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
-    int ret = mysql_client.GetMostRecentArticles(&str_articles);
+    int ret = mysql_client.GetDailyReport(&str_articles);
     if(ret == 0)
     {    
         std::string error;
@@ -191,7 +202,10 @@ void ClickEventProcessor::Process(mpserver::NewsMessage* output_message)
 }
 
 
-void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
+void ClickEventProcessor::Process(
+    mpserver::TextMessage* output_message,
+    bool& use_news_message,
+    mpserver::NewsMessage* news_message)
 {
     // swap src/dst.
     const std::string& openid = m_input_event.fromusername();
@@ -200,9 +214,15 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
     output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
     output_message->set_msgtype("text");
 
+    news_message->set_tousername(openid);
+    news_message->set_fromusername(m_input_event.tousername());
+    news_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    news_message->set_msgtype("news");
+
     std::string resp_content;
     StorageRedisClient redis_client;
-    StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    //StorageMysqlClient& mysql_client = StorageMysqlClientSingleton::Instance();
+    StorageMysqlClient mysql_client;
 
     bool has_horoscope = false;
     std::string head = GetUtf8String("");
@@ -250,6 +270,20 @@ void ClickEventProcessor::Process(mpserver::TextMessage* output_message)
             ret = mysql_client.GetTswkForture(astro, &mysql_content);
             if (ret == 0) resp_content = head + mysql_content;
         } else {
+            resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
+        }
+    } else if (event_key == "FORTUNE_HOROSCOPE_YEAR") {
+        ret = mysql_client.GetYearForture(astro, &mysql_content);
+        use_news_message = false;
+        if (ret == 0) {
+            mpserver::Articles* articles = news_message->mutable_articles();
+            std::string error_msg;
+            if (XmlToProtoMessage(mysql_content, articles, &error_msg)) {
+                use_news_message = true;
+                news_message->set_articlecount(articles->item_size());
+            }
+        }
+        if (!use_news_message) {
             resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
         }
     } else if (event_key == "FORTUNE_HOROSCOPE_OTHERS") {

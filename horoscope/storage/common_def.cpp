@@ -95,7 +95,8 @@ bool containsSeperateMonthDay(const std::string& input,
                                      std::string& month,
                                      std::string& day)
 {
-    Regex date_regex("((\\d{1,2})(月|-| |/|(\\.))(\\d{1,2}))");
+    std::string format("((\\d{1,2})(月|-| |/|(\\.))(\\d{1,2}))");
+    Regex date_regex(format.c_str());
     std::string date;
     
     if(date_regex.PartialMatch(input, &date))
@@ -147,16 +148,16 @@ int GetHoroscopeType(const std::string& month, const std::string& day)
 {
     if(month == "01")
     {
-        //摩羯座
+        // 摩羯座
         if(day >= "01" && day <= "19")
             return HoroscopeType_Capricorn;
-        //水瓶
+        // 水瓶
         if(day >= "20" && day <= "31")
             return HoroscopeType_Aquarius;
     }
     if(month == "02")
     {
-        //水瓶
+        // 水瓶
         if(day >= "01" && day <= "18")
             return  HoroscopeType_Aquarius;
         //双鱼
@@ -210,7 +211,7 @@ int GetHoroscopeType(const std::string& month, const std::string& day)
     }
     if(month == "08")
     {
-        //狮子座
+        // 狮子座
         if(day >= "01" && day <= "22")
             return HoroscopeType_Leo;
         //处女座
@@ -256,74 +257,71 @@ int GetHoroscopeType(const std::string& month, const std::string& day)
     return HoroscopeType_UnknownHoroscope;
 }
 
-int GetHoroscopeTypeByText(const std::string& input)
-{    	
+int GetHoroscopeTypeByText(const std::string& utf8_input)
+{
+    std::string input = GetGbkString(utf8_input);
     std::string month;
     std::string day;
-	if(GetMonthDay(input, month, day))
-	{
+	
+    if(input.find("双鱼")!= std::string::npos)
+        return HoroscopeType_Pisces;
+
+    if(input.find("水瓶") != std::string::npos)
+        return HoroscopeType_Aquarius;
+
+    if(input.find("摩羯") != std::string::npos ||
+       input.find("魔羯") != std::string::npos ||
+       input.find("山羊") != std::string::npos)
+        return HoroscopeType_Capricorn;
+
+    if(input.find("射手") != std::string::npos ||
+       input.find("人马") != std::string::npos)
+        return HoroscopeType_Sagittarius;
+
+    if(input.find("天蝎") != std::string::npos)
+        return HoroscopeType_Scorpio;
+
+    if(input.find("天秤") != std::string::npos ||
+       input.find("天平") != std::string::npos ||
+       input.find("天枰") != std::string::npos ||
+       input.find("天称") != std::string::npos)
+        return HoroscopeType_Libra;
+
+    if(input.find("处女") != std::string::npos)
+        return HoroscopeType_Virgo;
+
+    if(input.find("狮子") != std::string::npos)
+        return HoroscopeType_Leo;
+
+    if(input.find("巨蟹") != std::string::npos)
+        return HoroscopeType_Cancer;
+
+    if(input.find("双子") != std::string::npos)
+        return HoroscopeType_Gemini;
+
+    if(input.find("金牛") != std::string::npos)
+        return HoroscopeType_Taurus;
+
+    if(input.find("白羊") != std::string::npos)
+        return HoroscopeType_Aries;
+
+    if(GetMonthDay(input, month, day))
         return GetHoroscopeType(month, day);
-	}
-	else
-	{
-		if(input.find("双鱼") != std::string::npos ||
-           input.find("雙魚") != std::string::npos)
-			return HoroscopeType_Pisces;
 
-		if(input.find("水瓶") != std::string::npos)
-			return HoroscopeType_Aquarius;
-
-		if(input.find("摩羯") != std::string::npos ||
-		   input.find("魔羯") != std::string::npos ||
-		   input.find("山羊") != std::string::npos)
-			return HoroscopeType_Capricorn;
-
-		if(input.find("射手") != std::string::npos ||
-           input.find("人马") != std::string::npos)
-			return HoroscopeType_Sagittarius;
-
-		if(input.find("天蝎") != std::string::npos ||
-           input.find("天蠍") != std::string::npos)
-			return HoroscopeType_Scorpio;
-
-		if(input.find("天秤") != std::string::npos ||
-		   input.find("天平") != std::string::npos ||
-		   input.find("天枰") != std::string::npos ||
-           input.find("天称") != std::string::npos)
-			return HoroscopeType_Libra;
-
-		if(input.find("处女") != std::string::npos ||
-           input.find("處女") != std::string::npos)
-			return HoroscopeType_Virgo;
-
-		if(input.find("狮子") != std::string::npos ||
-           input.find("獅子") != std::string::npos)
-			return HoroscopeType_Leo;
-
-		if(input.find("巨蟹") != std::string::npos)
-			return HoroscopeType_Cancer;
-
-		if(input.find("双子") != std::string::npos ||
-           input.find("雙子") != std::string::npos)
-			return HoroscopeType_Gemini;
-
-		if(input.find("金牛") != std::string::npos)
-			return HoroscopeType_Taurus;
-
-		if(input.find("白羊") != std::string::npos)
-			return HoroscopeType_Aries;
-	}
     return HoroscopeType_UnknownHoroscope;
 }
 
-int GetDateByText(const std::string& origin)
+int GetDateByText(const std::string& utf_origin)
 {
-    if(origin.find("今天") != std::string::npos ||
-       origin.find("今日") != std::string::npos)
+    std::string origin = GetGbkString(utf_origin);
+    if((origin.find("今天") != std::string::npos)
+       || (origin.find("今日") != std::string::npos)
+       || (origin.find("今儿") != std::string::npos))
         return Today;
     
-    if(origin.find("明天") != std::string::npos ||
-       origin.find("明日") != std::string::npos)
+    if((origin.find("明天") != std::string::npos)
+       || (origin.find("明日") != std::string::npos)
+       || (origin.find("明儿") != std::string::npos))
         return Tomorrow;
     
     if(origin.find("本周") != std::string::npos)
@@ -332,7 +330,10 @@ int GetDateByText(const std::string& origin)
     if(origin.find("本月") != std::string::npos)
         return ThisMonth;
 
-    if(origin.find("今年") != std::string::npos)
+    if((origin.find("今年") != std::string::npos)
+       || (origin.find("本年") != std::string::npos)
+       || (origin.find("年度") != std::string::npos)
+       || (origin.find("2015") != std::string::npos))
         return ThisYear;
 
     return UnknownDate;

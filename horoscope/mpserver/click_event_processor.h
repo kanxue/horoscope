@@ -20,7 +20,10 @@ public:
     virtual void Run();
 
 private:
-    void Process(mpserver::TextMessage* output_message);
+    void Process(
+        mpserver::TextMessage* text_message,
+        bool& use_news_message,
+        mpserver::NewsMessage* news_message);
 
     void Process(mpserver::NewsMessage* output_message);
 

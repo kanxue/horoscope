@@ -82,11 +82,15 @@ public:
     int GetTswkForture(
         const int astro,
         std::string* content);
+
+    int GetYearForture(
+        const int astro,
+        std::string* content);
 		
 	int GetTodayFortuneReport(
 		std::string* content);
 		
-    int GetMostRecentArticles(
+    int GetDailyReport(
         std::string* content);
 
 public:
@@ -135,6 +139,11 @@ private:
         std::string* key);
 
     void MakeTswkFortureKey(
+        const int type,
+        const int astro,
+        std::string* key);
+
+    void MakeYearFortureKey(
         const int type,
         const int astro,
         std::string* key);
