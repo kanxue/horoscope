@@ -1,10 +1,17 @@
 cc_library(
+    name = 'simpletemplate',
+    srcs = 'simple_template.cpp',
+    deps = []
+)
+cc_library(
     name = 'httpserver',
-    srcs = 'echo_handler.cpp',
+    srcs = 'chinese_yang_handler.cpp',
     deps = [
         '//common/net/http:http',
+        '//common/web:web',
         '//thirdparty/gflags:gflags',
-        '//thirdparty/glog:glog'
+        '//thirdparty/glog:glog',
+	':simpletemplate'
     ]
 )
 

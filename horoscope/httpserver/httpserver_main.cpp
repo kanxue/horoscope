@@ -4,10 +4,10 @@
 #include "thirdparty/gflags/gflags.h"
 #include "thirdparty/glog/logging.h"
 
-#include "horoscope/httpserver/echo_handler.h"
+#include "horoscope/httpserver/chinese_yang_handler.h"
 
-DEFINE_string(server_ip, "127.0.0.1", "server ip address");
-DEFINE_int32(server_port, 1234, "server port");
+DEFINE_string(server_ip, "121.42.45.75", "server ip address");
+DEFINE_int32(server_port, 8888, "server port");
 DEFINE_int32(threads_num, 4, "threads num");
 
 int main(int argc, char** argv)
@@ -17,13 +17,10 @@ int main(int argc, char** argv)
     google::InitGoogleLogging(argv[0]);
 
     HttpServer server(FLAGS_threads_num);
-    SimpleEchoHandler handler;
+    ChineseYangHandler handler;
     HttpClosure* task = NewPermanentClosure(
-        &handler, &SimpleEchoHandler::HandleGet);
-    server.RegisterPrefixSimpleHandler("/echo", task);
-
-    //HttpHandler* echo_handler = new EchoHandler();
-    //server.RegisterHandler("/echo", echo_handler);
+        &handler, &ChineseYangHandler::HandleGet);
+    server.RegisterPrefixSimpleHandler("/yang", task);
 
     std::string address = StringConcat(
         FLAGS_server_ip, ":", FLAGS_server_port);

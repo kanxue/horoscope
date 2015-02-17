@@ -11,6 +11,7 @@ message UserAttr {
     optional int32 horoscope_type = 20;
 
     optional int32 rule_id = 30;
+    optional string nickname = 31;
 }
 
 message UserMessages {

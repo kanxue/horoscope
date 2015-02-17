@@ -43,7 +43,8 @@ enum enHoroscopeDate
     ThisWeek    = 3,
     ThisMonth   = 4,
     ThisYear    = 5,
-    UnknownDate = 6,
+    ChineseYangYear = 6,
+    UnknownDate = 100,
 };
 
 enum ActionType {
@@ -74,6 +75,7 @@ enum dbDataType {
 #define USER_COUNT_PREFIX "最近五分钟有"
 #define USER_COUNT_SUFFIX "人与你同时使用了小巫~"
 #define INPUT_HOROSCOPE_WITH_YEAR_WORDING "请输入你要查询的星座。比如天蝎年度 或者 天蝎2015"
+#define INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING "请输入你要查询的星座和性别。比如 双鱼男 羊年签"
 
 int Astro2Horoscope(int astro_type);
 int Horoscope2Astro(int horoscope_type);
@@ -84,6 +86,7 @@ std::string GetGbkString(const std::string& utf8_str);
 int GetHoroscopeTypeByText(const std::string& utf8_origin);
 
 int GetDateByText(const std::string& utf8_origin);
+int GetSexByText(const std::string& utf_origin);
 
 bool GetMonthDay(const std::string& gbk_input, std::string& month, std::string& day);
 

@@ -93,6 +93,12 @@ public:
     int GetDailyReport(
         std::string* content);
 
+    int GetYangNewYearKeyword(
+        const int astro,
+        const int sex,
+        std::string* news_url,
+        std::string* news_pic_url);
+
 public:
     // 从redis中迁移的数据接口
     int GetUserAttr(

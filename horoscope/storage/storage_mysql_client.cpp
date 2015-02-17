@@ -229,6 +229,32 @@ int StorageMysqlClient::GetDailyReport(
     return (content->empty()) ? 1 : 0;
 }
 
+int StorageMysqlClient::GetYangNewYearKeyword(
+    const int astro,
+    const int sex,
+    std::string* news_url,
+    std::string* news_pic_url)
+{
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+
+    std::string sql = StringFormat(
+        "select news_url, news_pic_url from storage_yang_new_year where astro_type=%d and sex =%d;", astro, sex);
+    //mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
+    int num_rows = result.num_rows();
+    LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
+    news_url->clear();
+    news_pic_url->clear();
+    if (num_rows > 0) {
+        result[0]["news_url"].to_string(*news_url);
+        result[0]["news_pic_url"].to_string(*news_pic_url);
+    }
+
+    return (num_rows > 0) ? 0 : 1;
+}
+
 int StorageMysqlClient::GetUserAttr(
     const std::string& openid,
     horoscope::UserAttr* userattr)
@@ -239,7 +265,7 @@ int StorageMysqlClient::GetUserAttr(
 
     std::string sql = StringFormat(
         "select birth_year, birth_month, birth_day, sex, "
-        "horoscope_type, rule_id from storage_user_attr "
+        "horoscope_type, rule_id, nickname from storage_user_attr "
         "where openid='%s';", openid.c_str());
     LOG(INFO) << "ready run mysql [" << sql << "]";
     //mysqlpp::StoreQueryResult result = m_query->store(sql);
@@ -256,6 +282,7 @@ int StorageMysqlClient::GetUserAttr(
         SET_INT_FROM_MYSQL(sex);
         SET_INT_FROM_MYSQL(horoscope_type);
         SET_INT_FROM_MYSQL(rule_id);
+        SET_STR_FROM_MYSQL(nickname);
 #undef SET_STR_FROM_MYSQL
 #undef SET_INT_FROM_MYSQL
     }
@@ -281,11 +308,11 @@ int StorageMysqlClient::SetUserAttr(
     if (num_rows <= 0) {
         sql = StringFormat(
             "insert into storage_user_attr(openid, birth_year, birth_month, "
-            "birth_day, sex, horoscope_type, rule_id) values('%s', %d, %d, "
-            " %d, %d, %d, %d);",
+            "birth_day, sex, horoscope_type, rule_id, nickname) values('%s', %d, %d, "
+            " %d, %d, %d, %d, '%s');",
             openid.c_str(), user_attr.birth_year(),
             user_attr.birth_month(), user_attr.birth_day(), user_attr.sex(),
-            user_attr.horoscope_type(), user_attr.rule_id());
+            user_attr.horoscope_type(), user_attr.rule_id(), user_attr.nickname().c_str());
         //bool succ = m_query->exec(sql);
         query = m_connection->query();
         succ = query.exec(sql);
@@ -293,11 +320,11 @@ int StorageMysqlClient::SetUserAttr(
     } else {
         sql = StringFormat(
             "update storage_user_attr set birth_year=%d, birth_month=%d, "
-            "birth_day=%d, sex=%d, horoscope_type=%d, rule_id=%d "
+            "birth_day=%d, sex=%d, horoscope_type=%d, rule_id=%d, nickname='%s' "
             "where openid='%s';",
             user_attr.birth_year(), user_attr.birth_month(),
             user_attr.birth_day(), user_attr.sex(),
-            user_attr.horoscope_type(), user_attr.rule_id(), openid.c_str());
+            user_attr.horoscope_type(), user_attr.rule_id(), user_attr.nickname().c_str(), openid.c_str());
         query = m_connection->query();
         succ = query.exec(sql);
         LOG(INFO) << "run [" << sql << "] succ " << succ;
