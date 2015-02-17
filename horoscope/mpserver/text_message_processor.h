@@ -21,6 +21,10 @@ public:
 private:
     void ProcessText(mpserver::TextMessage* output_message);
 
+    void ProcessChineseYangYear(
+        mpserver::NewsMessage* output_message,
+        bool& use_error_message, mpserver::TextMessage* error_message);
+
     void ProcessYear(
         mpserver::NewsMessage* output_message,
         bool& use_error_message, mpserver::TextMessage* error_message);
@@ -28,6 +32,8 @@ private:
     void ProcessDailyReport(
         mpserver::NewsMessage* output_message,
         bool& use_error_message,mpserver::TextMessage* error_message);
+    
+    int UpdateUserInfo(const std::string& open_id);
 
 private:
     mpserver::TextMessage m_input_message;

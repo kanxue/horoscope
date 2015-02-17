@@ -19,7 +19,7 @@ public:
     virtual void Run();
 
 private:
-    mpserver::SubscribeEvent m_input_event;
+    mpserver::ViewEvent m_input_event;
 }; // class ViewEventProcessor
 
 #endif // MPSERVER_VIEW_PROCESSOR_H_

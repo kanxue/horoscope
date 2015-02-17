@@ -27,6 +27,7 @@ cc_library(
         '//horoscope/mpserver/proto:xml_to_pb',
 
         '//horoscope/storage:storage',
+        '//horoscope/wxapi:wx_api_manager',
     ]
 )
 

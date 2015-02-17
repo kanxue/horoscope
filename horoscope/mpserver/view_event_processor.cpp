@@ -3,6 +3,7 @@
 #include "thirdparty/glog/logging.h"
 
 #include "horoscope/mpserver/proto/xml_to_pb.h"
+#include "horoscope/storage/storage_mysql_client.h"
 
 ViewEventProcessor::ViewEventProcessor(
     const std::string& uri,
@@ -25,7 +26,13 @@ void ViewEventProcessor::Run()
         return;
     }
 
-    // TODO(kanxue) record view action.
+    const std::string& openid = m_input_event.fromusername();
+    std::string event_key = m_input_event.eventkey();
+    if (event_key.empty()) {
+        event_key.assign("VIEW_EVENT");
+    }
+    StorageMysqlClient mysql_client;
+    mysql_client.AddUserClickAction(openid, event_key);
 
     // just log it.
     LOG(INFO) << "[VIEW_EVENT] " << m_input_event.ShortDebugString();

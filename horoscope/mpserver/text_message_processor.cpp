@@ -12,6 +12,7 @@
 #include "horoscope/storage/common_def.h"
 #include "horoscope/storage/storage_mysql_client.h"
 #include "horoscope/storage/storage_redis_client.h"
+#include "horoscope/wxapi/wx_api_manager.h"
 
 TextMessageProcessor::TextMessageProcessor(
     const std::string& uri,
@@ -50,7 +51,10 @@ void TextMessageProcessor::Run()
     mpserver::NewsMessage news_message;
     mpserver::TextMessage text_message;
     bool use_text = true;
-    if (date_type == ThisYear) {
+    if (date_type == ChineseYangYear) {
+        use_text = false;
+        ProcessChineseYangYear(&news_message, use_text, &text_message);
+    }else if (date_type == ThisYear) {
         use_text = false;
         ProcessYear(&news_message, use_text, &text_message);
     }else if (content.find("日报") != std::string::npos) {
@@ -195,6 +199,114 @@ void TextMessageProcessor::ProcessDailyReport(
     }
 }
 
+void TextMessageProcessor::ProcessChineseYangYear(
+    mpserver::NewsMessage* output_message,
+    bool& use_error_message,
+    mpserver::TextMessage* error_message)
+{
+    int ret = 0;
+    StorageMysqlClient mysql_client;
+    const std::string& openid = m_input_message.fromusername();
+    mysql_client.AddUserMessageAction(openid, m_input_message.content());
+    std::string content;
+    if (!ConvertUtf8ToGbk(m_input_message.content(), &content))
+        content.assign(m_input_message.content());
+    // swap src/dst.
+    output_message->set_tousername(openid);
+    output_message->set_fromusername(m_input_message.tousername());
+    output_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    output_message->set_msgtype("news");
+
+    error_message->set_tousername(openid);
+    error_message->set_fromusername(m_input_message.tousername());
+    error_message->set_createtime(static_cast<uint32_t>(time(NULL)));
+    error_message->set_msgtype("text");
+
+    int horoscope_type = GetHoroscopeTypeByText(content);
+    int sex_type = GetSexByText(content);
+    horoscope::UserAttr userattr;
+    ret = mysql_client.GetUserAttr(
+            m_input_message.fromusername(), &userattr);
+    LOG(INFO)<< userattr.nickname() << " and " << userattr.sex()<<" end";
+
+    bool show_nickname = false;
+    if(horoscope_type == HoroscopeType_UnknownHoroscope || sex_type == 0){
+        if(ret != 0)
+        {
+            LOG(ERROR)<< "HoroscopeType_UnknownHoroscope failed. ";
+            use_error_message = true;
+            error_message->set_content(GetUtf8String(INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING));
+            return;
+        }
+        else
+        {
+            show_nickname = true;
+        }
+    }
+    else
+    {
+        if (ret == 0 && horoscope_type == userattr.horoscope_type() && sex_type == userattr.sex()) {
+            show_nickname = true;
+        }
+        else
+        {
+            show_nickname = false;
+        }
+    }
+
+    std::string msyql_news_url, mysql_news_pic_url, error_msg;
+    mpserver::Articles* articles = output_message->mutable_articles();
+
+
+    if(show_nickname)
+        ret = mysql_client.GetYangNewYearKeyword(userattr.horoscope_type(), userattr.sex(), &msyql_news_url, &mysql_news_pic_url);
+    else
+        ret = mysql_client.GetYangNewYearKeyword(horoscope_type, sex_type, &msyql_news_url, &mysql_news_pic_url);
+
+    if (ret != 0) {
+        LOG(ERROR)<< "ProcessChineseYangYear GetYangNewYearKeyword failed. ";
+        use_error_message = true;
+        error_message->set_content(GetUtf8String(INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING));
+        return;
+    }
+
+    mpserver::ArticleItem *articleItem = articles->add_item();
+    std::string title = "";
+    if(show_nickname)
+    {
+        title = GetUtf8String("闹闹女巫店送给");
+        title.append(userattr.nickname());
+        title.append(GetUtf8String("的羊年签"));
+    }
+    else
+    {   horoscope::HoroscopeAttr horoscope_attr;
+        int horoscope_ret = mysql_client.GetHoroscopeAttr(
+            horoscope_type, &horoscope_attr);
+        if (horoscope_ret != 0) {
+            LOG(ERROR)<< "ProcessChineseYangYear GetHoroscopeAttr failed. ";
+            use_error_message = true;
+            error_message->set_content(GetUtf8String(INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING));
+            return;
+        }
+        title = horoscope_attr.zh_cn_name();
+        if(sex_type == 1)
+            title.append(GetUtf8String("男的羊年签"));
+        else
+            title.append(GetUtf8String("女的羊年签"));
+    }
+    articleItem->set_title(title);
+    // articleItem->set_description("description");
+    articleItem->set_picurl(mysql_news_pic_url);
+
+    std::string linkUrl = "http://121.42.45.75:8888/yang?nickname=";
+    linkUrl.append(userattr.nickname());
+    linkUrl.append("&resultpic=");
+    linkUrl.append(mysql_news_pic_url);
+    articleItem->set_url(linkUrl);
+
+    output_message->set_articlecount(articles->item_size());
+}
+
 void TextMessageProcessor::ProcessYear(
     mpserver::NewsMessage* output_message,
     bool& use_error_message,
@@ -270,7 +382,7 @@ void TextMessageProcessor::ProcessText(mpserver::TextMessage* output_message)
     if (horoscope_type != HoroscopeType_UnknownHoroscope) {
         
         if (content.find("绑定") != std::string::npos) {
-
+            UpdateUserInfo(openid);
             std::string head = GetUtf8String("");
             horoscope::HoroscopeAttr horoscope_attr;
             ret = mysql_client.GetHoroscopeAttr(horoscope_type, &horoscope_attr);
@@ -280,6 +392,10 @@ void TextMessageProcessor::ProcessText(mpserver::TextMessage* output_message)
             resp_content = head;
 
             horoscope::UserAttr userattr;
+
+            ret = mysql_client.GetUserAttr(
+                m_input_message.fromusername(), &userattr);
+
             userattr.set_horoscope_type(horoscope_type);
 			
 			std::string month = "";
@@ -381,5 +497,47 @@ void TextMessageProcessor::ProcessText(mpserver::TextMessage* output_message)
     }
 
     output_message->set_content(resp_content);
+}
+
+int TextMessageProcessor::UpdateUserInfo(const std::string& open_id)
+{
+    int result;
+    std::string nickname;
+    int sex;
+    result = WxApiManager::getInstance()->getUserInfo(open_id, nickname, sex);
+    if (result == 0)
+    {
+        LOG(INFO)
+        << "success get user info [nickname=" << nickname
+        << "] [sex=" << sex << "]";
+    
+        StorageMysqlClient mysql_client;
+
+        horoscope::UserAttr userattr;
+        result = mysql_client.GetUserAttr(open_id, &userattr);
+
+        userattr.set_openid(open_id);
+        userattr.set_sex(sex);
+        userattr.set_nickname(nickname);
+        result = mysql_client.SetUserAttr(open_id, userattr);
+
+        if(result == 0)
+        {
+            LOG(INFO)
+            << "write to mysql success";
+        }
+        else
+        {
+            LOG(ERROR)
+            << "fail to write to mysql";
+        }
+    }
+    else
+    {
+        LOG(ERROR)
+        << "failed get user info [openid=" << open_id
+        << "] [errorcode=" << result << "]";
+    }
+    return result; 
 }
 

@@ -21,6 +21,7 @@ public:
 
 private:
     void Process(mpserver::TextMessage* output_message);
+    int UpdateUserInfo(const std::string& open_id);
 
 private:
     mpserver::SubscribeEvent m_input_event;
