@@ -286,6 +286,37 @@ void ClickEventProcessor::Process(
         if (!use_news_message) {
             resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_BIND_WORDING);
         }
+    }else if(event_key == "YANG_NEW_YEAR_RESULT") {
+        use_news_message = false;
+
+        if(userattr.horoscope_type() == HoroscopeType_UnknownHoroscope || userattr.sex() == 0){
+            resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING);
+        }else{
+            std::string msyql_news_url;
+            std::string mysql_news_pic_url;
+            std::string title = GetUtf8String("闹闹女巫店送给");
+            ret = mysql_client.GetYangNewYearKeyword(userattr.horoscope_type(), userattr.sex(), &msyql_news_url, &mysql_news_pic_url);
+            if (ret != 0) {
+                LOG(ERROR)<< "ProcessChineseYangYear GetYangNewYearKeyword failed. ";
+                resp_content = GetUtf8String(INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING);
+            }else{
+                use_news_message = true;
+
+                mpserver::Articles* articles = news_message->mutable_articles();
+                mpserver::ArticleItem *articleItem = articles->add_item();
+                if(userattr.nickname().length() > 0)
+                    title.append(userattr.nickname());
+                else
+                    title.append(GetUtf8String("我"));
+                title.append(GetUtf8String("的羊年签"));
+                articleItem->set_title(title);
+                articleItem->set_picurl(mysql_news_pic_url);
+                articleItem->set_url(msyql_news_url);
+                news_message->set_articlecount(articles->item_size());
+
+            }
+        }
+
     } else if (event_key == "FORTUNE_HOROSCOPE_OTHERS") {
         resp_content = GetUtf8String(INPUT_OTHER_HOROSCOPE_WORDING);
     } else if (event_key == "PLUGIN_HOROSCOPE_DETAIL") {

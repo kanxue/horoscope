@@ -1,10 +1,12 @@
+
 #include "common/base/string/concat.h"
 #include "common/net/http/http_server.h"
 #include "thirdparty/gflags/gflags.h"
-#include "horoscope/mpserver/mp_handler.h"
+#include "horoscope/hes/hes_token_handler.h"
+#include "horoscope/hes/hes_verify_token_handler.h"
 
 DEFINE_string(server_ip, "127.0.0.1", "server ip address");
-DEFINE_int32(server_port, 1234, "server port");
+DEFINE_int32(server_port, 2234, "server port");
 DEFINE_int32(threads_num, 4, "threads num");
 
 int main(int argc, char** argv)
@@ -13,7 +15,8 @@ int main(int argc, char** argv)
     google::InitGoogleLogging(argv[0]);
 
     HttpServer server(FLAGS_threads_num);
-    MpHandler handler(&server);
+    HesTokenHandler token_handler(&server);
+    HesVerifyTokenHandler verify_token_handler(&server);
 
     std::string address = StringConcat(
         FLAGS_server_ip, ":", FLAGS_server_port);
@@ -29,4 +32,3 @@ int main(int argc, char** argv)
 
     return ret;
 }
-

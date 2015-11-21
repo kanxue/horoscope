@@ -1,0 +1,26 @@
+
+package hes;
+
+message BaseResponse {
+    optional int32 code = 1;
+    optional bytes errmsg = 2;
+}
+
+message TokenRequest {
+    optional bytes username = 1;
+    optional bytes password = 2;
+}
+
+message TokenResponse {
+    optional bytes token = 1;
+    optional uint32 expired = 2;
+}
+
+message VerifyTokenRequest {
+    optional bytes token = 1;
+}
+
+message VerifyTokenResponse {
+    optional uint32 uid = 1;
+}
+

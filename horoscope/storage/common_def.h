@@ -62,7 +62,7 @@ enum dbDataType {
 };
 
 #define SYSTEM_ERROR_WORDING "系统错误，请稍后重试 :-("
-#define NOT_IMPLEMENT_WORDING "开发中，敬请期待 :-)"
+#define NOT_IMPLEMENT_WORDING "Coming soon"
 
 //#define INPUT_BIRTHDAY_WITH_BIND_WORDING "请绑定你的出生日期，比如：绑定0622"
 #define INPUT_HOROSCOPE_WITH_BIND_WORDING "请输入指令绑定你的出生日期或星座。比如：绑定11月9日 或 绑定1109 或 绑定天蝎"

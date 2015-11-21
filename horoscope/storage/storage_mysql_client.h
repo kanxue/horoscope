@@ -100,6 +100,25 @@ public:
         std::string* news_pic_url);
 
 public:
+    // auth function cluster.
+    int CheckUserPwd(
+        const std::string& username,
+        const std::string& pwd_md5,
+        const std::string& client_ip,
+        std::string* token);
+
+    uint32_t GetTokenExpiredSeconds();
+
+    int VerifyToken(
+        const std::string& token,
+        const std::string& client_ip,
+        uint32_t& uid);
+
+    int GetHesUserByUserName(
+        const std::string& username,
+        horoscope::HesUserAttr* hes_user_attr);
+
+public:
     // 从redis中迁移的数据接口
     int GetUserAttr(
         const std::string& openid,

@@ -29,16 +29,23 @@ cc_library(
         'common_def.cpp',
         'storage_mysql_client.cpp',
         'storage_redis_client.cpp',
+        'token_manager.cpp',
+        'hesapierrno.cpp',
     ],
     deps = [
         ':redis_client',
         ':storage_proto',
 
         '//common/collection:memory_cache',
+        '//common/crypto/hash:hash',
+        '//common/crypto/random:random',
+        '//common/crypto/rsa2:rsa2',
+        '//common/compress/checksum:checksum',
         '//common/encoding:encoding',
         '//common/text/regex:regex',
         '//common/system/concurrency:concurrency',
         '//thirdparty/mysql++:mysqlpp',
+        '#dl',
     ]
 )
 
@@ -55,6 +62,12 @@ cc_test(
     name = 'storage_mysql_client_test',
     srcs = 'storage_mysql_client_test.cpp',
     deps = ':storage'
+)
+
+cc_test(
+    name = 'token_manager_test',
+    srcs = 'token_manager_test.cpp',
+    deps = [':storage', '#dl']
 )
 
 cc_binary(

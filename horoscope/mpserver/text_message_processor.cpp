@@ -271,38 +271,44 @@ void TextMessageProcessor::ProcessChineseYangYear(
     }
 
     mpserver::ArticleItem *articleItem = articles->add_item();
-    std::string title = "";
+    std::string title = GetUtf8String("闹闹女巫店送给");
+    std::string linkUrl = "http://121.42.45.75:8888/yang?";
+
     if(show_nickname)
     {
-        title = GetUtf8String("闹闹女巫店送给");
         title.append(userattr.nickname());
-        title.append(GetUtf8String("的羊年签"));
+        linkUrl.append("nickname=");
+        linkUrl.append(userattr.nickname());
+        linkUrl.append("&");
     }
     else
-    {   horoscope::HoroscopeAttr horoscope_attr;
-        int horoscope_ret = mysql_client.GetHoroscopeAttr(
-            horoscope_type, &horoscope_attr);
-        if (horoscope_ret != 0) {
-            LOG(ERROR)<< "ProcessChineseYangYear GetHoroscopeAttr failed. ";
-            use_error_message = true;
-            error_message->set_content(GetUtf8String(INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING));
-            return;
-        }
-        title = horoscope_attr.zh_cn_name();
-        if(sex_type == 1)
-            title.append(GetUtf8String("男的羊年签"));
-        else
-            title.append(GetUtf8String("女的羊年签"));
+    {           
+        title.append(GetUtf8String("我"));
+        // horoscope::HoroscopeAttr horoscope_attr;
+        // int horoscope_ret = mysql_client.GetHoroscopeAttr(
+        //     horoscope_type, &horoscope_attr);
+        // if (horoscope_ret != 0) {
+        //     LOG(ERROR)<< "ProcessChineseYangYear GetHoroscopeAttr failed. ";
+        //     use_error_message = true;
+        //     error_message->set_content(GetUtf8String(INPUT_HOROSCOPE_WITH_YANG_YEAR_WORDING));
+        //     return;
+        // }
+        // title = horoscope_attr.zh_cn_name();
+        // title = title.substr(0,4);
+        // if(sex_type == 1)
+        //     title.append(GetUtf8String("男的羊年签"));
+        // else
+        //     title.append(GetUtf8String("女的羊年签"));
     }
+    title.append(GetUtf8String("的羊年签"));
+
     articleItem->set_title(title);
     // articleItem->set_description("description");
     articleItem->set_picurl(mysql_news_pic_url);
 
-    std::string linkUrl = "http://121.42.45.75:8888/yang?nickname=";
-    linkUrl.append(userattr.nickname());
-    linkUrl.append("&resultpic=");
+    linkUrl.append("resultpic=");
     linkUrl.append(mysql_news_pic_url);
-    articleItem->set_url(linkUrl);
+    articleItem->set_url(msyql_news_url);
 
     output_message->set_articlecount(articles->item_size());
 }

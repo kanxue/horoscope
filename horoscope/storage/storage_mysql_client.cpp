@@ -2,12 +2,15 @@
 
 #include "common/base/string/algorithm.h"
 #include "common/base/string/format.h"
+#include "common/crypto/hash/md5.h"
 #include "common/system/time/datetime.h"
 
 #include "thirdparty/gflags/gflags.h"
 #include "thirdparty/glog/logging.h"
 
 #include "horoscope/storage/common_def.h"
+#include "horoscope/storage/token_manager.h"
+#include "horoscope/storage/hesapierrno.h"
 
 DEFINE_string(storage_mysql_name, "eyrie_farm", "db name");
 DEFINE_string(storage_mysql_host, "114.113.155.201", "mysql host");
@@ -18,6 +21,7 @@ DEFINE_int32(storage_mysql_timezone, 0, "time zone");
 DEFINE_bool(storage_mysql_use_cache, true, "use cache or not");
 DEFINE_int32(storage_mysql_cache_capacity, 100, "cache capacity");
 DEFINE_int32(storage_mysql_cache_expired, 60, "cache expired seconds");
+DEFINE_int32(storage_mysql_hes_token_expired, 7200, "token expired second.");
 
 StorageMysqlClientOptions& StorageMysqlClientOptions::GetDefaultOptions()
 {
@@ -253,6 +257,98 @@ int StorageMysqlClient::GetYangNewYearKeyword(
     }
 
     return (num_rows > 0) ? 0 : 1;
+}
+
+int StorageMysqlClient::CheckUserPwd(
+    const std::string& username,
+    const std::string& pwd,
+    const std::string& client_ip,
+    std::string* token)
+{
+    horoscope::HesUserAttr hes_user_attr;
+    int ret = GetHesUserByUserName(username, &hes_user_attr);
+    if (ret != 0) {
+        LOG(ERROR)
+            << __func__ << " GetHesUserByUserName failed, username[" << username
+            << "] ret " << ret;
+        return ret;
+    }
+
+    std::string pwd_md5 = common::MD5::HexDigest(pwd);
+    if (pwd_md5 != hes_user_attr.password_md5()) {
+        LOG(ERROR)
+            << __func__ << " pwd_md5 NOT matched, input [" << pwd_md5
+            << "] db [" << hes_user_attr.password_md5() << "]";
+        return API_INVALID_PASSWORD;
+    }
+
+    uint32_t now = static_cast<uint32_t>(time(NULL));
+    TokenManager& tm = TokenManagerSingleton::Instance();
+    tm.GenerateToken(hes_user_attr.uid(), client_ip, now, token);
+    LOG(INFO)
+        << __func__ << " success, uid " << hes_user_attr.uid()
+        << " username [" << username
+        << "] client_ip [" << client_ip
+        << "] token [" << *token << "]";
+
+    return 0;
+}
+
+uint32_t StorageMysqlClient::GetTokenExpiredSeconds()
+{
+    return FLAGS_storage_mysql_hes_token_expired;
+}
+
+int StorageMysqlClient::VerifyToken(
+    const std::string& token,
+    const std::string& client_ip,
+    uint32_t& uid)
+{
+    uint32_t stamp_rhs = static_cast<uint32_t>(time(NULL));
+    uint32_t stamp_lhs = stamp_rhs - GetTokenExpiredSeconds();
+    TokenManager& tm = TokenManagerSingleton::Instance();
+    int ret = tm.VerifyToken(token, client_ip, stamp_lhs, stamp_rhs, uid);
+    if (ret != 0) {
+        LOG(ERROR)
+            << __func__ << " failed, token [" << token
+            << "] ret " << ret;
+        return ret;
+    }
+
+    return 0;
+}
+
+int StorageMysqlClient::GetHesUserByUserName(
+    const std::string& username,
+    horoscope::HesUserAttr* hes_user_attr)
+{
+    if (username.empty() || (username.size() > 60u))
+        return API_INVALID_USERNAME;
+
+    ScopedLocker<Mutex> locker(&m_mutex);
+    ConnectWithLock();
+    std::string sql = StringFormat(
+        "select uid,username,password_md5,created,updated from hes_user "
+        "where username='%s';", username.c_str());
+    LOG(INFO) << "ready run mysql [" << sql << "]";
+    //mysqlpp::StoreQueryResult result = m_query->store(sql);
+    mysqlpp::Query query = m_connection->query();
+    mysqlpp::StoreQueryResult result = query.store(sql);
+    int num_rows = result.num_rows();
+    LOG(INFO) << "run [" << sql << "] num_rows " << num_rows;
+    if (num_rows > 0) {
+#define SET_INT_FROM_MYSQL(item) hes_user_attr->set_##item(result[0][#item]);
+#define SET_STR_FROM_MYSQL(item) result[0][#item].to_string(*hes_user_attr->mutable_##item());
+        SET_INT_FROM_MYSQL(uid);
+        SET_STR_FROM_MYSQL(username);
+        SET_STR_FROM_MYSQL(password_md5);
+        SET_INT_FROM_MYSQL(created);
+        SET_INT_FROM_MYSQL(updated);
+#undef SET_STR_FROM_MYSQL
+#undef SET_INT_FROM_MYSQL
+    }
+
+    return (num_rows > 0) ? 0 : API_INVALID_USERNAME;
 }
 
 int StorageMysqlClient::GetUserAttr(

@@ -131,7 +131,7 @@ TEST_F(MpServerAutoTest, ClickMessage_YearFortune)
     std::string response;
     EXPECT_TRUE(Post(request, &response)) << GetLastErrorMsg();
     {
-        std::string some_expect("巫店天蝎座2015年度运势");
+        std::string some_expect("2015年度运势");
         EXPECT_TRUE(response.find(some_expect) != std::string::npos) << response;
     }
     {

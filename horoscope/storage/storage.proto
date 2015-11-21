@@ -65,3 +65,19 @@ message HoroscopeAttr {
     optional string zh_tw_name = 22;
 }
 
+message TokenAttr {
+    optional uint32 uid = 1;
+    optional bytes ip = 2;
+    optional uint32 created = 3;
+    optional bytes nonce = 4;
+    optional uint32 crc = 5;
+}
+
+message HesUserAttr {
+    optional uint32 uid = 1;
+    optional bytes username = 2;
+    optional bytes password_md5 = 3;
+    optional uint32 created = 4;
+    optional uint32 updated = 5;
+}
+

@@ -336,7 +336,7 @@ int GetDateByText(const std::string& utf_origin)
        || (origin.find("2015") != std::string::npos))
         return ThisYear;
 
-    if(origin.find("—Ú—Ú—Ú—Ú—Ú—Ú") != std::string::npos)
+    if(origin.find("—ÚƒÍ«©") != std::string::npos)
         return ChineseYangYear;
 
     return UnknownDate;
